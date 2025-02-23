@@ -4,13 +4,13 @@
 #metadata
 .metadata/
 
-#Debug
-Debug/
-debug/
-Release/
-release
+# Compile
+Debug/*
+debug/*
+Release/*
+release/*
 
-# Binaries
+# Binary
 !Debug/*.elf
 !debug/*.elf
 !Release/*.elf
