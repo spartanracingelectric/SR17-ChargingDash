@@ -10,6 +10,20 @@ debug/
 Release/
 release
 
+# Binaries
+!Debug/*.elf
+!debug/*.elf
+!Release/*.elf
+!release/*.elf
+!Debug/*.bin
+!debug/*.bin
+!Release/*.bin
+!release/*.bin
+!Debug/*.hex
+!debug/*.hex
+!Release/*.hex
+!release/*.hex
+
 # Prerequisites
 *.d
 
@@ -17,7 +31,6 @@ release
 *.o
 *.ko
 *.obj
-*.elf
 
 # Linker output
 *.ilk
@@ -42,8 +55,6 @@ release
 *.app
 *.i*86
 *.x86_64
-*.hex
-*.bin
 
 # Debug files
 *.dSYM/
