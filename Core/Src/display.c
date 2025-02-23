@@ -17,7 +17,9 @@ void SRE_Display_Init(bool test_mode) {
 }
 // Function to test display
 void SRE_Display_Test() {
-	ssd1306_Fill(White);
+	//ssd1306_Fill(White);
+	char *navButtons[] = {"Nav", "Batt", "Start"};
+	SRE_Display_Nav_Bar(navButtons, 3, 0);
 	ssd1306_UpdateScreen();
 }
 // Example function to display navigation

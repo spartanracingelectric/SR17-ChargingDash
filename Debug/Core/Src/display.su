@@ -1,0 +1,4 @@
+../Core/Src/display.c:12:6:SRE_Display_Init	16	static
+../Core/Src/display.c:19:6:SRE_Display_Test	24	static
+../Core/Src/display.c:26:6:SRE_Display_Nav	4	static
+../Core/Src/display.c:30:6:SRE_Display_Nav_Bar	56	static
