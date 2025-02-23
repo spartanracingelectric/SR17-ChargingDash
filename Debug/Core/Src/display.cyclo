@@ -1,4 +1,0 @@
-../Core/Src/display.c:12:6:SRE_Display_Init	2
-../Core/Src/display.c:19:6:SRE_Display_Test	1
-../Core/Src/display.c:26:6:SRE_Display_Nav	1
-../Core/Src/display.c:30:6:SRE_Display_Nav_Bar	7
