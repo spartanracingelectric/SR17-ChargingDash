@@ -72,7 +72,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	currentTime = HAL_GetTick();
-
 	//debounce set at 200ms
 	if (currentTime - previousTime > 200) {
 		//rightmost button is GPIO_PIN_4, leftmost button is GPIO_PIN_11

@@ -76,8 +76,6 @@ void SRE_Display_Nav() {
 	}
 
 	if (selectPressed) {
-		selectPressed = false;
-
 		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
@@ -87,7 +85,7 @@ void SRE_Display_Nav() {
 
 		// Populate with the function name that corresponds to each button number respectively later.
 		if (selectedButton == 0) {
-			// Goes to home
+			SRE_Display_Home();
 		}
 		else if (selectedButton == 1) {
 			SRE_Display_Start_Charging();
@@ -107,6 +105,7 @@ void SRE_Display_Nav() {
 
 void SRE_Display_Home() {
 	selectedButton = 0;
+	selectPressed = false;
 
 	char home[] = "Home";
 	char soc[] = "SOC: 85.7%";
@@ -125,18 +124,16 @@ void SRE_Display_Home() {
 			selectedButton = 1;
 		}
 
-		ssd1306_SetCursor(1, 1);
-		retval = ssd1306_WriteString(home, Font_16x15, White);
-		ssd1306_Line(0, 10, 127, 10, White);
+		SRE_Display_Title_Bar("Home");
 
 		ssd1306_SetCursor(1, 13);
-		retval = ssd1306_WriteString(soc, Font_16x15, White);
+		retval = ssd1306_WriteString(soc, Font_6x8, White);
 
 		ssd1306_SetCursor(1, 23);
-		retval = ssd1306_WriteString(charger_temp, Font_16x15, White);
+		retval = ssd1306_WriteString(charger_temp, Font_6x8, White);
 
 		ssd1306_SetCursor(1, 33);
-		retval = ssd1306_WriteString(balancing, Font_16x15, White);
+		retval = ssd1306_WriteString(balancing, Font_6x8, White);
 
 		char *navBarButtons[] = {"Batt", "Nav"};
 		SRE_Display_Nav_Bar(navBarButtons, 2, 0);
