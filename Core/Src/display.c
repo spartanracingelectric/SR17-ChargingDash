@@ -30,7 +30,7 @@ void SRE_Display_Nav() {
 
 	char* buttons[] = {"Home", "Start Charging", "Start Balancing", "Battery", "Charger", "Errors"};
 
-	int numOfButtons = 8;
+	int numOfButtons = 6;
 
 
 	char retval;
@@ -68,9 +68,11 @@ void SRE_Display_Nav() {
 
 			y1 = y1 + 13;
 			y2 = y2 + 13;
-			y3 = y2 + 11;
+			y3 = y2 + 10;
 		}
 
+		int numOfScreens = (numOfButtons+3)/4;
+		SRE_Display_Long_Scroll_Bar(currentScreen, numOfScreens);
 
 
 		ssd1306_UpdateScreen();
@@ -397,6 +399,23 @@ void SRE_Display_Short_Scroll_Bar(int currentScreen, int numOfScreens) {
 		int scrollBarStart = 14+ (currentScreen*scrollBarLength);
 
 		ssd1306_DrawRectangle(124, 13, 126, 47, White);
+		ssd1306_Line(125, scrollBarStart, 125, scrollBarStart+scrollBarLength, White);
+	}
+
+}
+
+void SRE_Display_Long_Scroll_Bar(int currentScreen, int numOfScreens) {
+
+	//currentScreen is zero-indexed
+
+	if (numOfScreens > 1) {
+
+		int scrollContainerHeight = 49;
+		int scrollBarLength = scrollContainerHeight/numOfScreens;
+
+		int scrollBarStart = 14+ (currentScreen*scrollBarLength);
+
+		ssd1306_DrawRectangle(124, 13, 126, 62, White);
 		ssd1306_Line(125, scrollBarStart, 125, scrollBarStart+scrollBarLength, White);
 	}
 
