@@ -19,82 +19,58 @@ void SRE_Display_Init(bool test_mode) {
 // Function to test display
 void SRE_Display_Test() {
 	//ssd1306_Fill(White);
-	SRE_Display_Display_Nav();
+	SRE_Display_Nav();
 	ssd1306_UpdateScreen();
 }
 // Example function to display navigation
 void SRE_Display_Nav() {
 	selectedButton = 0;
 
-	char nav[] = "Navigation";
-	char home[] = "Home";
-	char charge[] = "Start Charging";
-	char balance[] = "Start Balancing";
-	char battery[] = "Battery";
+
+	char* buttons[] = {"Home", "Start Charging", "Start Balancing", "Battery", "Charger", "Errors"};
+
+	int numOfButtons = 8;
+
 
 	char retval;
 
-	// 4 buttons: home, charging, balancing, battery
 	while(!selectPressed) {
 		ssd1306_FillRectangle(0, 0, 127, 63, Black);
 
-		if (selectedButton > 3){
+		if (selectedButton > numOfButtons-1){
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 3;
+			selectedButton = numOfButtons-1;
 		}
+
+		int y1 = 15;
+		int y2 = 13;
+		int y3 = 24;
 
 		//Navigation title
 		SRE_Display_Title_Bar("Navigation");
 
-		// Home
-		if (selectedButton == 0 || selectedButton > 4) {
-			ssd1306_SetCursor(3, 15);
-			retval = ssd1306_WriteString(home, Font_6x8, Black);
-			ssd1306_FillRectangle(1, 13, 122, 11, White);
-		}
-		else {
-			ssd1306_SetCursor(3, 15);
-			retval = ssd1306_WriteString(home, Font_6x8, White);
-			ssd1306_DrawRectangle(1, 13, 122, 11, White);
+		int currentScreen = selectedButton/4;
+		int startIndex = currentScreen*4;
+
+		for (int i = startIndex; i < startIndex + 4 && i < numOfButtons; i++) {
+			ssd1306_SetCursor(3, y1);
+			if (selectedButton == i) {
+				ssd1306_FillRectangle(1,y2, 122, y3, White);
+				ssd1306_WriteString(buttons[i], Font_6x8, Black);
+			}
+			else {
+				ssd1306_DrawRectangle(1,y2, 122, y3, White);
+				ssd1306_WriteString(buttons[i], Font_6x8, White);
+			}
+
+			y1 = y1 + 13;
+			y2 = y2 + 13;
+			y3 = y2 + 11;
 		}
 
-		// Charging
-		if (selectedButton == 1) {
-			ssd1306_SetCursor(3, 28);
-			retval = ssd1306_WriteString(charge, Font_6x8, Black);
-			ssd1306_FillRectangle(1, 26, 122, 11, White);
-		}
-		else {
-			ssd1306_SetCursor(3, 28);
-			retval = ssd1306_WriteString(charge, Font_16x15, White);
-			ssd1306_DrawRectangle(1, 26, 122, 11, White);
-		}
 
-		// Balancing
-		if (selectedButton == 2) {
-			ssd1306_SetCursor(3, 41);
-			retval = ssd1306_WriteString(balance, Font_6x8, Black);
-			ssd1306_FillRectangle(1, 39, 122, 11, White);
-		}
-		else {
-			ssd1306_SetCursor(3, 41);
-			retval = ssd1306_WriteString(balance, Font_6x8, White);
-			ssd1306_DrawRectangle(1, 39, 122, 11, White);
-		}
-
-		// Battery
-		if (selectedButton == 3 || selectedButton < 0) {
-			ssd1306_SetCursor(3, 54);
-			retval = ssd1306_WriteString(battery, Font_6x8, Black);
-			ssd1306_FillRectangle(1, 52, 122, 11, White);
-		}
-		else {
-			ssd1306_SetCursor(3, 54);
-			retval = ssd1306_WriteString(battery, Font_6x8, White);
-			ssd1306_DrawRectangle(1, 52, 122, 11, White);
-		}
 
 		ssd1306_UpdateScreen();
 	}
@@ -102,11 +78,11 @@ void SRE_Display_Nav() {
 	if (selectPressed) {
 		selectPressed = false;
 
-		if (selectedButton > 3) {
+		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 1;
+			selectedButton = numOfButtons;
 		}
 
 		// Populate with the function name that corresponds to each button number respectively later.
@@ -114,7 +90,7 @@ void SRE_Display_Nav() {
 			// Goes to home
 		}
 		else if (selectedButton == 1) {
-			// Goes to Charging
+			SRE_Display_Start_Charging();
 
 		}
 		else if (selectedButton == 2) {
@@ -310,6 +286,7 @@ void SRE_Display_Charging2(){
 }
 
 void SRE_Display_Start_Charging() {
+	selectPressed = false;
 
 	//sets up sample profiles to use for testing
 	struct Profile {
