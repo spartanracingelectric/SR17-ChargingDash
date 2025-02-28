@@ -101,6 +101,9 @@ void SRE_Display_Nav() {
 		else if (selectedButton == 3) {
 			SRE_Display_Battery1();
 		}
+		else if (selectedButton == 4) {
+			SRE_Display_Charger_Stats();
+		}
 	}
 }
 
@@ -422,13 +425,16 @@ void SRE_Display_Long_Scroll_Bar(int currentScreen, int numOfScreens) {
 }
 
 void SRE_Display_Charger_Stats() {
+	selectPressed = false;
+	selectedButton = 0;
+
+	int numOfButtons = 2;
 
 	while (!selectPressed) {
 
 		ssd1306_FillRectangle(0, 0, 127, 63, Black);
 
 
-		int numOfButtons = 2;
 		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
@@ -463,12 +469,18 @@ void SRE_Display_Charger_Stats() {
 	}
 
 	if (selectPressed) {
-		selectPressed = false;
-		if (selectedButton == 0 ) {
-			// go to Batt sreen
+		if (selectedButton > numOfButtons-1) {
+			selectedButton = 0;
+		}
+		if (selectedButton < 0) {
+			selectedButton = numOfButtons-1;
+		}
+
+		if (selectedButton == 0) {
+			SRE_Display_Battery1();
 		}
 		else if (selectedButton == 1) {
-			//go to Navigation screen
+			SRE_Display_Nav();
 		}
 	}
 }
