@@ -90,7 +90,7 @@ void SRE_Display_Nav() {
 
 		}
 		else if (selectedButton == 2) {
-			// Goes to Balancing
+			SRE_Display_Start_Balancing();
 
 		}
 		else if (selectedButton == 3) {
@@ -318,6 +318,9 @@ void SRE_Display_Start_Charging() {
     profiles[6] = p7;
     profiles[7] = p8;
 
+    int navStartIndex = numOfProfiles;
+    int navLastIndex = numOfProfiles +2;
+
 	while (!selectPressed) {
 
 		//resets screen
@@ -326,8 +329,7 @@ void SRE_Display_Start_Charging() {
 		SRE_Display_Title_Bar("Start Charging");
 
 		int currentScreen = selectedButton/3;
-		int navStartIndex = numOfProfiles;
-		int navLastIndex = numOfProfiles +2;
+
 
 		//if the nav bar is selected, ensures that the currentScreen is the last screen of profiles
 		if (selectedButton > numOfProfiles-1) {
@@ -386,6 +388,14 @@ void SRE_Display_Start_Charging() {
 
 		ssd1306_UpdateScreen();
 
+	}
+
+	if (selectPressed) {
+		if (selectedButton == navStartIndex) {
+			SRE_Display_Battery1();
+		}
+		else if (selectedButton == navStartIndex + 1);
+			SRE_Display_Nav();
 	}
 }
 
@@ -616,54 +626,63 @@ void SRE_Display_Battery2(){
 }
 
 //Display Start Balancing
-void SRE_Display_StartBalancing(){
-	char balancingTitle[] = "Balancing";
+void SRE_Display_Start_Balancing(){
+	selectPressed = false;
+	selectedButton = 0;
+
 	char balancingOnOff[] = "Balancing is off";
 
-	char battButtonText[] = "Batt";
-	char navButtonText[] = "Nav";
-	char switchBalText[] = "Start Bal";
 
 	//NOTE: Parameters of drawLine and rectangle may be off. Might need to set Cursor
 		//for them also before calling them.
 		//Can't really test without working OLED.
 	//Writes "Charging 1"
 		//Change to (1,2) probably
+
+	int numOfButtons = 3;
+
 	while(!selectPressed){
-		if (selectedButton > 2) {
+
+
+		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 1;
+			selectedButton = numOfButtons-1;
 		}
-			ssd1306_SetCursor(1, 2);
-			ssd1306_WriteString(balancingTitle, Font_6x8, White);
-			//x1, y1, x2, y2
 
-			//Makes a straight line separating title and text.
-			ssd1306_Line(0, 10, 127, 10, White);
+		ssd1306_FillRectangle(0, 0, 127, 63, Black);
 
-			ssd1306_SetCursor(1, 13);
-			ssd1306_WriteString(balancingOnOff, Font_6x8, White);
+		SRE_Display_Title_Bar("Balancing");
 
-			//3px spacing between buttons.
-			//2px between box and text.
-			//Writes button for Batt.
-			ssd1306_SetCursor(3, 54);
-			ssd1306_WriteString(battButtonText, Font_6x8, White);
-			ssd1306_DrawRectangle(1, 52, 27, 63, White);
+		ssd1306_SetCursor(1, 13);
+		ssd1306_WriteString(balancingOnOff, Font_6x8, White);
 
-			//nav button
-			ssd1306_SetCursor(32, 54);
-			ssd1306_WriteString(navButtonText, Font_6x8, White);
-			ssd1306_DrawRectangle(30, 52, 51, 63, White);
+		char *navButtons[] = {"Batt", "Nav", "Start Bal"};
+		SRE_Display_Nav_Bar(navButtons, numOfButtons, 0);
 
-			//Switch button
-			ssd1306_SetCursor(56, 54);
-			ssd1306_WriteString(switchBalText, Font_6x8, White);
-			ssd1306_DrawRectangle(54, 52, 110, 63, White);
-    
-			ssd1306_UpdateScreen();
+
+		ssd1306_UpdateScreen();
+	}
+	if (selectPressed) {
+		if (selectedButton > numOfButtons-1) {
+			selectedButton = 0;
+		}
+		if (selectedButton < 0) {
+			selectedButton = numOfButtons-1;
+		}
+
+		if (selectedButton ==0 ) {
+			SRE_Display_Battery1();
+		}
+		else if (selectedButton == 1) {
+			SRE_Display_Nav();
+		}
+		else if (selectedButton == 2) {
+			//start or stop bal
+		}
+
+
 	}
 
 }

@@ -10,7 +10,7 @@ void SRE_Display_Charging_Instructions();
 void SRE_Display_Home();
 void SRE_Display_Nav_Bar(char *buttons[], int numOfButtons, int firstButtonIndex);
 void SRE_Display_Err();
-void SRE_Display_StartBalancing();
+void SRE_Display_Start_Balancing();
 void SRE_Display_Charging1();
 void SRE_Display_Battery2();
 void SRE_Display_Charging2();
