@@ -107,33 +107,33 @@ void SRE_Display_Home() {
 	selectedButton = 0;
 	selectPressed = false;
 
-	char home[] = "Home";
 	char soc[] = "SOC: 85.7%";
 	char charger_temp[] = "Charger Tmp: 100.1C";
 	char balancing[] = "Balancing Off";
-	char retval;
+
+	int numOfButtons = 2;
 
 	while (!selectPressed) {
 
 		ssd1306_FillRectangle(0, 0, 127, 63, Black);
 
-		if (selectedButton > 1) {
+		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 1;
+			selectedButton = numOfButtons-1;
 		}
 
 		SRE_Display_Title_Bar("Home");
 
 		ssd1306_SetCursor(1, 13);
-		retval = ssd1306_WriteString(soc, Font_6x8, White);
+		ssd1306_WriteString(soc, Font_6x8, White);
 
 		ssd1306_SetCursor(1, 23);
-		retval = ssd1306_WriteString(charger_temp, Font_6x8, White);
+		ssd1306_WriteString(charger_temp, Font_6x8, White);
 
 		ssd1306_SetCursor(1, 33);
-		retval = ssd1306_WriteString(balancing, Font_6x8, White);
+		ssd1306_WriteString(balancing, Font_6x8, White);
 
 		char *navBarButtons[] = {"Batt", "Nav"};
 		SRE_Display_Nav_Bar(navBarButtons, 2, 0);
@@ -144,18 +144,18 @@ void SRE_Display_Home() {
 	if (selectPressed) {
 		selectPressed = false;
 
-		if (selectedButton > 1) {
+		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 1;
+			selectedButton = numOfButtons-1;
 		}
 
 		if (selectedButton == 0) {
-			// Goes to Batt
+			SRE_Display_Battery1();
 		}
 		else if (selectedButton == 1) {
-			// Goes to Nav
+			SRE_Display_Nav();
 		}
 	}
 
