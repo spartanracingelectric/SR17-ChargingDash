@@ -25,6 +25,7 @@ void SRE_Display_Test() {
 // Example function to display navigation
 void SRE_Display_Nav() {
 	selectedButton = 0;
+	selectPressed = false;
 
 
 	char* buttons[] = {"Home", "Start Charging", "Start Balancing", "Battery", "Charger", "Errors"};
@@ -96,8 +97,7 @@ void SRE_Display_Nav() {
 
 		}
 		else if (selectedButton == 3) {
-			// Goes to Battery
-
+			SRE_Display_Battery1();
 		}
 	}
 }
@@ -455,6 +455,8 @@ void SRE_Display_Charger_Stats() {
 }
 
 void SRE_Display_Battery1(){
+	selectPressed = false;
+	selectedButton = 0;
 	char battery1Title[] = "Battery 1";
 	char temperatureStats[] = "Tmp H/L:100.22/50.11C";
 	char voltageStats[] = "Vlt H/L:50.11/20.11V";
@@ -462,13 +464,17 @@ void SRE_Display_Battery1(){
 	char navButtonText[] = "Nav";
 	char battery2ButtonText[] = "Battery 2";
 
+	int numOfButtons = 2;
+
 	while(!selectPressed){
 
-		if (selectedButton > 1) {
+		ssd1306_FillRectangle(0, 0, 127, 63, Black);
+
+		if (selectedButton > numOfButtons-1) {
 			selectedButton = 0;
 		}
 		if (selectedButton < 0) {
-			selectedButton = 1;
+			selectedButton = numOfButtons-1;
 		}
 
 			ssd1306_SetCursor(1, 2);
@@ -521,6 +527,22 @@ void SRE_Display_Battery1(){
 			}
 
 			ssd1306_UpdateScreen();
+	}
+	if (selectPressed) {
+		if (selectedButton > numOfButtons-1) {
+			selectedButton = 0;
+		}
+		if (selectedButton < 0) {
+			selectedButton = numOfButtons-1;
+		}
+
+		if (selectedButton == 0) {
+			SRE_Display_Nav();
+		}
+		else if (selectedButton ==1) {
+			SRE_Display_Battery2();
+		}
+
 	}
 
 
