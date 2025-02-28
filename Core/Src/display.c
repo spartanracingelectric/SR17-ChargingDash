@@ -19,8 +19,7 @@ void SRE_Display_Init(bool test_mode) {
 // Function to test display
 void SRE_Display_Test() {
 	//ssd1306_Fill(White);
-	char *navButtons[] = {"Nav", "Batt", "Start"};
-	SRE_Display_Nav_Bar(navButtons, 3, 0);
+	SRE_Display_Display_Nav();
 	ssd1306_UpdateScreen();
 }
 // Example function to display navigation
@@ -47,27 +46,24 @@ void SRE_Display_Nav() {
 		}
 
 		//Navigation title
-		ssd1306_SetCursor(1, 1);
-		retval = ssd1306_WriteString(nav, Font_16x15, White);
-
-		ssd1306_Line(0, 10, 127, 10, White);
+		SRE_Display_Title_Bar("Navigation");
 
 		// Home
 		if (selectedButton == 0 || selectedButton > 4) {
 			ssd1306_SetCursor(3, 15);
-			retval = ssd1306_WriteString(home, Font_16x15, Black);
+			retval = ssd1306_WriteString(home, Font_6x8, Black);
 			ssd1306_FillRectangle(1, 13, 122, 11, White);
 		}
 		else {
 			ssd1306_SetCursor(3, 15);
-			retval = ssd1306_WriteString(home, Font_16x15, White);
+			retval = ssd1306_WriteString(home, Font_6x8, White);
 			ssd1306_DrawRectangle(1, 13, 122, 11, White);
 		}
 
 		// Charging
 		if (selectedButton == 1) {
 			ssd1306_SetCursor(3, 28);
-			retval = ssd1306_WriteString(charge, Font_16x15, Black);
+			retval = ssd1306_WriteString(charge, Font_6x8, Black);
 			ssd1306_FillRectangle(1, 26, 122, 11, White);
 		}
 		else {
@@ -79,24 +75,24 @@ void SRE_Display_Nav() {
 		// Balancing
 		if (selectedButton == 2) {
 			ssd1306_SetCursor(3, 41);
-			retval = ssd1306_WriteString(balance, Font_16x15, Black);
+			retval = ssd1306_WriteString(balance, Font_6x8, Black);
 			ssd1306_FillRectangle(1, 39, 122, 11, White);
 		}
 		else {
 			ssd1306_SetCursor(3, 41);
-			retval = ssd1306_WriteString(balance, Font_16x15, White);
+			retval = ssd1306_WriteString(balance, Font_6x8, White);
 			ssd1306_DrawRectangle(1, 39, 122, 11, White);
 		}
 
 		// Battery
 		if (selectedButton == 3 || selectedButton < 0) {
 			ssd1306_SetCursor(3, 54);
-			retval = ssd1306_WriteString(battery, Font_16x15, Black);
+			retval = ssd1306_WriteString(battery, Font_6x8, Black);
 			ssd1306_FillRectangle(1, 52, 122, 11, White);
 		}
 		else {
 			ssd1306_SetCursor(3, 54);
-			retval = ssd1306_WriteString(battery, Font_16x15, White);
+			retval = ssd1306_WriteString(battery, Font_6x8, White);
 			ssd1306_DrawRectangle(1, 52, 122, 11, White);
 		}
 
@@ -131,7 +127,7 @@ void SRE_Display_Nav() {
 		}
 	}
 }
-}
+
 
 void SRE_Display_Home() {
 	selectedButton = 0;
@@ -161,7 +157,7 @@ void SRE_Display_Home() {
 		retval = ssd1306_WriteString(soc, Font_16x15, White);
 
 		ssd1306_SetCursor(1, 23);
-		retval = ssd1306_WriteString(charger_tmp, Font_16x15, White);
+		retval = ssd1306_WriteString(charger_temp, Font_16x15, White);
 
 		ssd1306_SetCursor(1, 33);
 		retval = ssd1306_WriteString(balancing, Font_16x15, White);
@@ -395,9 +391,9 @@ void SRE_Display_Start_Charging() {
 				ssd1306_WriteString(profileString, Font_6x8, White);
 			}
 
-			y1 = y1 + 12;
-			y2 = y2 + 12;
-			y3 = y3 + 12;
+			y1 = y1 + 13;
+			y2 = y2 + 13;
+			y3 = y3 + 13;
 		}
 
 		//numOfProiles + 2 ensures it will always round up
@@ -798,7 +794,7 @@ void SRE_Display_Err() {
 		}
 
 		ssd1306_SetCursor(1, 1);
-		retval = ssd1306_WriteString(err, Font_16x15, White);
+		retval = ssd1306_WriteString("Errors", Font_16x15, White);
 		ssd1306_Line(0, 10, 127, 10, White);
 
 		ssd1306_SetCursor(3, 15);
