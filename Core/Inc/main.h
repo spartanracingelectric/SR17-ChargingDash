@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define LED_BAL_GPIO_Port GPIOA
 #define LED_CP_Pin GPIO_PIN_4
 #define LED_CP_GPIO_Port GPIOA
+#define HVIL_SW_Pin GPIO_PIN_6
+#define HVIL_SW_GPIO_Port GPIOA
 #define LED_TC_FLT_Pin GPIO_PIN_15
 #define LED_TC_FLT_GPIO_Port GPIOB
 #define BTN_TOP_Pin GPIO_PIN_10
@@ -73,6 +75,8 @@ void Error_Handler(void);
 #define BTN_SEL_GPIO_Port GPIOC
 #define BTN_BTM_Pin GPIO_PIN_2
 #define BTN_BTM_GPIO_Port GPIOD
+#define RTC_SW_Pin GPIO_PIN_5
+#define RTC_SW_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

@@ -1,9 +1,6 @@
 // Written by Ayman Alamayri in Dec 2024
-#include <stdbool.h>
 #include "display.h"
-#include "ssd1306.h"
-#include "ssd1306_fonts.h"
-#include <string.h>
+
 extern int selectedButton;
 extern bool selectPressed;
 extern int backPressed;
