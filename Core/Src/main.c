@@ -154,6 +154,27 @@ void CAN_Charge(struct CANMessage *ptr, bool charge_enable) {
 
 // CAN test end
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+
+	currentTime = HAL_GetTick();
+	//debounce set at 200ms
+	if (currentTime - previousTime > 200) {
+		//rightmost button is GPIO_PIN_4, leftmost button is GPIO_PIN_11
+		if (GPIO_Pin == BTN_BTM_Pin && !selectPressed) {
+			selectedButton++;
+		}
+		else if (GPIO_Pin == GPIO_PIN_12) {
+			selectPressed = true;
+		}
+		else if (GPIO_Pin == GPIO_PIN_11 && !selectPressed) {
+			backPressed = true;
+		}
+		else if (GPIO_Pin == BTN_TOP_Pin && !selectPressed) {
+			selectedButton--;
+		}
+		previousTime = currentTime;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -263,6 +284,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//	  if (HAL_GPIO_ReadPin(GPIOC, BTN_SEL_Pin) == GPIO_PIN_RESET)
+//	  {
+//		 HAL_Delay(500);
+//		 HAL_GPIO_TogglePin(GPIOA, LED_BAL_Pin);
+//		 while (HAL_GPIO_ReadPin(GPIOC, BTN_SEL_Pin) == GPIO_PIN_RESET);
+//	  }
+	  //HAL_GPIO_TogglePin(GPIOA, LED_BAL_Pin);
+
   }
   /* USER CODE END 3 */
 }
@@ -461,16 +490,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_TC_FLT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BTN_TOP_Pin BTN_BCK_Pin BTN_SEL_Pin */
-  GPIO_InitStruct.Pin = BTN_TOP_Pin|BTN_BCK_Pin|BTN_SEL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  /*Configure GPIO pins : BTN_TOP_Pin BTN_SEL_Pin BTN_BACK_Pin */
+  GPIO_InitStruct.Pin = BTN_TOP_Pin|BTN_SEL_Pin|BTN_BACK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BTN_BTM_Pin */
   GPIO_InitStruct.Pin = BTN_BTM_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(BTN_BTM_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RTC_SW_Pin */
@@ -479,7 +508,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(RTC_SW_GPIO_Port, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
+    /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
