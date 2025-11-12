@@ -5,10 +5,13 @@
 .metadata/
 
 # Compile
+build/
 Debug/*
 debug/*
 Release/*
 release/*
+compile_commands.json
+.cache/
 
 # Binary
 !Debug/*.elf
