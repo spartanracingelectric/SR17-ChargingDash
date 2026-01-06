@@ -3,6 +3,7 @@
 
 #metadata
 .metadata/
+.project
 
 # Compile
 build/
@@ -64,3 +65,4 @@ compile_commands.json
 *.su
 *.idb
 *.pdb
+
