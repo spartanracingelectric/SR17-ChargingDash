@@ -29,6 +29,8 @@
 #include "display.h"
 #include "charger.h"
 #include "can_interface.h"
+#include "charging_profile.h"
+#include "eeprom.h"
 
 /* USER CODE END Includes */
 
@@ -220,6 +222,7 @@ int main(void)
    // TODO: better init for GUI
   // TEMP STUFF 1 END
 
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -232,14 +235,16 @@ int main(void)
 
     //uint8_t data = currentBmsAndElconData.BMS_sumOfCells;
     //HAL_I2C_Master_Transmit(&hi2c2, 0x04 << 1, &data, 1, 10);
-    printf("TESTING\n");
-    Charger_printBmsAndElconData(&currentBmsAndElconData);
+    // Charger_printBmsAndElconData(&currentBmsAndElconData);
+    // float voltage = 0.1f;
+    // float amp = 0.5f;
+    // CAN_Charge(&charging_msg, voltage, amp, true);
+    // HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);
+    // HAL_Delay(1000);
 
-    float voltage = 0.1f;
-    float amp = 0.5f;
-    CAN_Charge(&charging_msg, voltage, amp, true);
-    HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);
-    HAL_Delay(1000);
+    // ChargingProfile_testEEPROM();
+
+    HAL_Delay(100);
     // TODO: CHECK ALL LEDS AND PERIPHERALS WORK
     // Display_updateState();
     // Charger_handleCharging(&charging_msg, &balancing_msg);
