@@ -19,7 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME SR16-ChargingDash)
+set(CMAKE_PROJECT_NAME SR17-ChargingDash)
 
 # Include toolchain file
 include("cmake/gcc-arm-none-eabi.cmake")

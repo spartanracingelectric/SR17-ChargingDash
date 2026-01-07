@@ -59,22 +59,24 @@ void MX_I2C2_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define THERM_AMBIENT_Pin GPIO_PIN_0
+#define THERM_AMBIENT_GPIO_Port GPIOC
 #define THERM_IN_SIG_Pin GPIO_PIN_1
 #define THERM_IN_SIG_GPIO_Port GPIOC
 #define THERM_OUT_SIG_Pin GPIO_PIN_2
 #define THERM_OUT_SIG_GPIO_Port GPIOC
+#define CP_PWM_Pin GPIO_PIN_0
+#define CP_PWM_GPIO_Port GPIOA
 #define IN_HVIL_ACUM_Pin GPIO_PIN_1
 #define IN_HVIL_ACUM_GPIO_Port GPIOA
 #define LED_HV_Pin GPIO_PIN_2
 #define LED_HV_GPIO_Port GPIOA
 #define LED_BAL_Pin GPIO_PIN_3
 #define LED_BAL_GPIO_Port GPIOA
-#define CP_SIG_Pin GPIO_PIN_4
-#define CP_SIG_GPIO_Port GPIOA
-#define IN_HVIL_FSW_Pin GPIO_PIN_6
-#define IN_HVIL_FSW_GPIO_Port GPIOA
-#define IN_HVIL_ESTOP_Pin GPIO_PIN_7
-#define IN_HVIL_ESTOP_GPIO_Port GPIOA
+#define FLASH_CS_Pin GPIO_PIN_4
+#define FLASH_CS_GPIO_Port GPIOA
+#define PP_SIGNAL_Pin GPIO_PIN_4
+#define PP_SIGNAL_GPIO_Port GPIOC
 #define SHUNT_SIG_Pin GPIO_PIN_0
 #define SHUNT_SIG_GPIO_Port GPIOB
 #define IN_BMS_FLT_LED_Pin GPIO_PIN_1
@@ -89,6 +91,12 @@ void MX_I2C2_Init(void);
 #define IN_HVIL_TERM_GPIO_Port GPIOC
 #define HVIL_CTRL_Pin GPIO_PIN_9
 #define HVIL_CTRL_GPIO_Port GPIOC
+#define AC_DETECTION_Pin GPIO_PIN_8
+#define AC_DETECTION_GPIO_Port GPIOA
+#define IN_HVIL_FSW_Pin GPIO_PIN_11
+#define IN_HVIL_FSW_GPIO_Port GPIOA
+#define IN_HVIL_ESTOP_Pin GPIO_PIN_12
+#define IN_HVIL_ESTOP_GPIO_Port GPIOA
 #define BTN_UP_Pin GPIO_PIN_10
 #define BTN_UP_GPIO_Port GPIOC
 #define BTN_UP_EXTI_IRQn EXTI15_10_IRQn
@@ -105,6 +113,8 @@ void MX_I2C2_Init(void);
 #define FAN_CTRL_GPIO_Port GPIOB
 #define IN_RTC_SW_Pin GPIO_PIN_5
 #define IN_RTC_SW_GPIO_Port GPIOB
+#define HEARTBEAT_LED_Pin GPIO_PIN_7
+#define HEARTBEAT_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

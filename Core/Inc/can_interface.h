@@ -20,8 +20,8 @@ extern CAN_RxHeaderTypeDef RxHeader;
 extern uint8_t RxData[8];
 extern uint32_t elconBmsFilterIDs[5];
 
-HAL_StatusTypeDef CAN_Start();
-HAL_StatusTypeDef CAN_Activate();
+HAL_StatusTypeDef CAN_Start(void);
+HAL_StatusTypeDef CAN_Activate(void);
 HAL_StatusTypeDef CAN_Send(CANMessage *canMsgPtr);
 void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_length);
 void Set_CAN_Id(CANMessage *ptr, uint32_t id, bool isExtended);

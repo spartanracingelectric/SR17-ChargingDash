@@ -1,6 +1,6 @@
 #include "can_interface.h"
 #include "charger.h"
-#include <stdio.h> 
+#include <stdio.h>
 
 static uint8_t bmsFlags = 0;
 
@@ -9,26 +9,25 @@ int bms_can_previous_time = 0;
 int bms_can_debounce_ms = 1000;
 
 uint32_t elconBmsFilterIDs[5] = {
-  0x600, // BMS imbalance
-  0x621, // BMS soc
-  0x622, // BMS volt/temp high+low
-  0x18FF50E5, // Elcon
-  0x604, //BMS balance status
+    0x600,      // BMS imbalance
+    0x621,      // BMS soc
+    0x622,      // BMS volt/temp high+low
+    0x18FF50E5, // Elcon
+    0x604,      // BMS balance status
 };
 
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
 
-HAL_StatusTypeDef CAN_Start() {
-	return HAL_CAN_Start(&hcan1);
+HAL_StatusTypeDef CAN_Start(void) { return HAL_CAN_Start(&hcan1); }
+
+HAL_StatusTypeDef CAN_Activate(void) {
+  return HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
-HAL_StatusTypeDef CAN_Activate() {
-	return HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
-}
-
-HAL_StatusTypeDef CAN_Send(CANMessage *canMsgPtr) {
-	return HAL_CAN_AddTxMessage(&hcan1, &canMsgPtr->TxHeader, (uint8_t*) canMsgPtr->data, &canMsgPtr->TxMailbox);
+HAL_StatusTypeDef CAN_Send(CANMessage *m) {
+  return HAL_CAN_AddTxMessage(&hcan1, &m->TxHeader, (uint8_t *)m->data,
+                              &m->TxMailbox);
 }
 
 void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_length) {
@@ -47,10 +46,10 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   filter0.FilterScale = CAN_FILTERSCALE_32BIT;
   filter0.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   filter0.FilterActivation = ENABLE;
-  filter0.FilterIdHigh     = (elconBmsFilterIDs[0] << 5) & 0xFFFF;
-  filter0.FilterIdLow      = 0;
+  filter0.FilterIdHigh = (elconBmsFilterIDs[0] << 5) & 0xFFFF;
+  filter0.FilterIdLow = 0;
   filter0.FilterMaskIdHigh = 0xFFFF;
-  filter0.FilterMaskIdLow  = 0xFFFF;
+  filter0.FilterMaskIdLow = 0xFFFF;
 
   // ----- Filter 1: BMS ID 0x621 -----
   CAN_FilterTypeDef filter1 = {0};
@@ -59,10 +58,10 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   filter1.FilterScale = CAN_FILTERSCALE_32BIT;
   filter1.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   filter1.FilterActivation = ENABLE;
-  filter1.FilterIdHigh     = (elconBmsFilterIDs[1] << 5) & 0xFFFF;
-  filter1.FilterIdLow      = 0;
+  filter1.FilterIdHigh = (elconBmsFilterIDs[1] << 5) & 0xFFFF;
+  filter1.FilterIdLow = 0;
   filter1.FilterMaskIdHigh = 0xFFFF;
-  filter1.FilterMaskIdLow  = 0xFFFF;
+  filter1.FilterMaskIdLow = 0xFFFF;
 
   // ----- Filter 2: BMS ID 0x622 -----
   CAN_FilterTypeDef filter2 = {0};
@@ -71,10 +70,10 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   filter2.FilterScale = CAN_FILTERSCALE_32BIT;
   filter2.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   filter2.FilterActivation = ENABLE;
-  filter2.FilterIdHigh     = (elconBmsFilterIDs[2] << 5) & 0xFFFF;
-  filter2.FilterIdLow      = 0;
+  filter2.FilterIdHigh = (elconBmsFilterIDs[2] << 5) & 0xFFFF;
+  filter2.FilterIdLow = 0;
   filter2.FilterMaskIdHigh = 0xFFFF;
-  filter2.FilterMaskIdLow  = 0xFFFF;
+  filter2.FilterMaskIdLow = 0xFFFF;
 
   // ----- Filter 3: ELCON Extended ID 0x18FF50E5 -----
   CAN_FilterTypeDef filter3 = {0};
@@ -83,10 +82,10 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   filter3.FilterScale = CAN_FILTERSCALE_32BIT;
   filter3.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   filter3.FilterActivation = ENABLE;
-  filter3.FilterIdHigh     = (elconBmsFilterIDs[3] >> 13) & 0xFFFF;
-  filter3.FilterIdLow      = ((elconBmsFilterIDs[3] << 3) & 0xFFFF) | (1 << 2);
+  filter3.FilterIdHigh = (elconBmsFilterIDs[3] >> 13) & 0xFFFF;
+  filter3.FilterIdLow = ((elconBmsFilterIDs[3] << 3) & 0xFFFF) | (1 << 2);
   filter3.FilterMaskIdHigh = 0xFFFF;
-  filter3.FilterMaskIdLow  = 0xFFFF;
+  filter3.FilterMaskIdLow = 0xFFFF;
 
   // ----- Filter 4: BMS Balance Status 0x604 -----
   CAN_FilterTypeDef filter4 = {0};
@@ -95,10 +94,22 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   filter4.FilterScale = CAN_FILTERSCALE_32BIT;
   filter4.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   filter4.FilterActivation = ENABLE;
-  filter4.FilterIdHigh     = (elconBmsFilterIDs[4] << 5) & 0xFFFF;
-  filter4.FilterIdLow      = 0;
+  filter4.FilterIdHigh = (elconBmsFilterIDs[4] << 5) & 0xFFFF;
+  filter4.FilterIdLow = 0;
   filter4.FilterMaskIdHigh = 0xFFFF;
-  filter4.FilterMaskIdLow  = 0xFFFF;
+  filter4.FilterMaskIdLow = 0xFFFF;
+
+  // Accept everything (for testing)
+  CAN_FilterTypeDef f = {0};
+  f.FilterBank = 0;
+  f.FilterMode = CAN_FILTERMODE_IDMASK;
+  f.FilterScale = CAN_FILTERSCALE_32BIT;
+  f.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+  f.FilterActivation = ENABLE;
+  f.FilterIdHigh = 0x0000;
+  f.FilterIdLow = 0x0000;
+  f.FilterMaskIdHigh = 0x0000;
+  f.FilterMaskIdLow = 0x0000;
 
   // Apply filters
   HAL_CAN_ConfigFilter(&hcan1, &filter0);
@@ -106,72 +117,82 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
   HAL_CAN_ConfigFilter(&hcan1, &filter2);
   HAL_CAN_ConfigFilter(&hcan1, &filter3);
   HAL_CAN_ConfigFilter(&hcan1, &filter4);
+  // HAL_CAN_ConfigFilter(&hcan1, &f);
 
   HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
 void Set_CAN_Id(CANMessage *ptr, uint32_t id, bool isExtended) {
   if (isExtended) {
-	  ptr->TxHeader.ExtId = id;
+    ptr->TxHeader.ExtId = id;
   } else {
     ptr->TxHeader.StdId = id;
   }
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK) {
-    	Error_Handler();
-  	}
+  if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK) {
+    Error_Handler();
+  }
 
-  	bms_can_current_time = HAL_GetTick();
-  	int time_difference = bms_can_current_time - bms_can_previous_time;
+  bms_can_current_time = HAL_GetTick();
+  int time_difference = bms_can_current_time - bms_can_previous_time;
 
-	if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == elconBmsFilterIDs[3]) {
-		currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
-		currentBmsAndElconData.ELCON_outCurrent = ((RxData[2] << 8) | RxData[3])* 0.1;
-		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
-		currentBmsAndElconData.ELCON_fault[3] = RxData[4] & 0x08;
-		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
-		currentBmsAndElconData.ELCON_fault[1] = RxData[4] & 0x02;
-		currentBmsAndElconData.ELCON_fault[0] = RxData[4] & 0x01;
-	}
+  if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == elconBmsFilterIDs[3]) {
+    currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
+    currentBmsAndElconData.ELCON_outCurrent =
+        ((RxData[2] << 8) | RxData[3]) * 0.1;
+    currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
+    currentBmsAndElconData.ELCON_fault[3] = RxData[4] & 0x08;
+    currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
+    currentBmsAndElconData.ELCON_fault[1] = RxData[4] & 0x02;
+    currentBmsAndElconData.ELCON_fault[0] = RxData[4] & 0x01;
+  }
 
-	if (RxHeader.IDE == CAN_ID_STD && time_difference > bms_can_debounce_ms) {
-		if (RxHeader.StdId == elconBmsFilterIDs[0]) {
-			bmsFlags |= FLAG_600;
-			currentBmsAndElconData.BMS_sumOfCells = ((RxData[7] << 8) | RxData[6]) * 0.01;
-			currentBmsAndElconData.BMS_avgVolt = currentBmsAndElconData.BMS_sumOfCells / 96;
-			currentBmsAndElconData.BMS_packImbalance = ((RxData[3] << 8) | RxData[2]) * 0.0001;
+  if (RxHeader.IDE == CAN_ID_STD && time_difference > bms_can_debounce_ms) {
+    if (RxHeader.StdId == elconBmsFilterIDs[0]) {
+      bmsFlags |= FLAG_600;
+      currentBmsAndElconData.BMS_sumOfCells =
+          ((RxData[7] << 8) | RxData[6]) * 0.01;
+      currentBmsAndElconData.BMS_avgVolt =
+          currentBmsAndElconData.BMS_sumOfCells / 96;
+      currentBmsAndElconData.BMS_packImbalance =
+          ((RxData[3] << 8) | RxData[2]) * 0.0001;
 
-			uint8_t faultByte = RxData[1];
-			currentBmsAndElconData.BMS_fault[0] = ((faultByte >> 2) & 0x1); // Cell High Temp Fault
-			currentBmsAndElconData.BMS_fault[1] = ((faultByte >> 3) & 0x1); // Cell Volt Imbalance Fault
-			currentBmsAndElconData.BMS_fault[2] = ((faultByte >> 4) & 0x1); // Cell Low Volt Fault
-			currentBmsAndElconData.BMS_fault[3] = ((faultByte >> 5) & 0x1); // Cell High Volt Fault
-			currentBmsAndElconData.BMS_fault[4] = ((faultByte >> 6) & 0x1); // Pack Low Volt Fault
-			currentBmsAndElconData.BMS_fault[5] = ((faultByte >> 7) & 0x1); // Pack High Volt Fault
-		} 
-		else if (RxHeader.StdId == elconBmsFilterIDs[1]) {
-			bmsFlags |= FLAG_621;
-			currentBmsAndElconData.BMS_stateOfCharge = RxData[2];
-   		} 
-		else if (RxHeader.StdId == elconBmsFilterIDs[2]) {
-			bmsFlags |= FLAG_622;
-			currentBmsAndElconData.BMS_minTemp = RxData[5];
-			currentBmsAndElconData.BMS_maxTemp = RxData[4];
-			currentBmsAndElconData.BMS_minVolt = ((RxData[3] << 8) | RxData[2]) * 0.0001;
-			currentBmsAndElconData.BMS_maxVolt = ((RxData[1] << 8) | RxData[0]) * 0.0001;
-    	}
-        else if (RxHeader.StdId == elconBmsFilterIDs[4]) {
-			bmsFlags |= FLAG_604;
-            currentBmsAndElconData.BMS_balanceStatus = (RxData[0] & 0x01) ? 1 : 0;
-        }
+      uint8_t faultByte = RxData[1];
+      currentBmsAndElconData.BMS_fault[0] =
+          ((faultByte >> 2) & 0x1); // Cell High Temp Fault
+      currentBmsAndElconData.BMS_fault[1] =
+          ((faultByte >> 3) & 0x1); // Cell Volt Imbalance Fault
+      currentBmsAndElconData.BMS_fault[2] =
+          ((faultByte >> 4) & 0x1); // Cell Low Volt Fault
+      currentBmsAndElconData.BMS_fault[3] =
+          ((faultByte >> 5) & 0x1); // Cell High Volt Fault
+      currentBmsAndElconData.BMS_fault[4] =
+          ((faultByte >> 6) & 0x1); // Pack Low Volt Fault
+      currentBmsAndElconData.BMS_fault[5] =
+          ((faultByte >> 7) & 0x1); // Pack High Volt Fault
+    } else if (RxHeader.StdId == elconBmsFilterIDs[1]) {
+      bmsFlags |= FLAG_621;
+      currentBmsAndElconData.BMS_stateOfCharge = RxData[2];
+    } else if (RxHeader.StdId == elconBmsFilterIDs[2]) {
+      bmsFlags |= FLAG_622;
+      currentBmsAndElconData.BMS_minTemp = RxData[5];
+      currentBmsAndElconData.BMS_maxTemp = RxData[4];
+      currentBmsAndElconData.BMS_minVolt =
+          ((RxData[3] << 8) | RxData[2]) * 0.0001;
+      currentBmsAndElconData.BMS_maxVolt =
+          ((RxData[1] << 8) | RxData[0]) * 0.0001;
+    } else if (RxHeader.StdId == elconBmsFilterIDs[4]) {
+      bmsFlags |= FLAG_604;
+      currentBmsAndElconData.BMS_balanceStatus = (RxData[0] & 0x01) ? 1 : 0;
+    }
 
-		if (bmsFlags == (FLAG_600 | FLAG_621 | FLAG_622 | FLAG_604)) {
-			bms_can_previous_time = bms_can_current_time;
-			bmsFlags = 0;
-		}
-	}
+    if (bmsFlags == (FLAG_600 | FLAG_621 | FLAG_622 | FLAG_604)) {
+      bms_can_previous_time = bms_can_current_time;
+      bmsFlags = 0;
+    }
+  }
 }
 
 void CAN_Balance(CANMessage *ptr, bool balancing_enabled) {
@@ -191,7 +212,8 @@ void CAN_Charge(CANMessage *ptr, float chargingLimitsVoltsFloat, float chargingL
   chargingLimitsAmpsFloat *= 10;
   uint16_t chargingLimitsVolts = (uint16_t)chargingLimitsVoltsFloat;
   uint16_t chargingLimitsAmps = (uint16_t)chargingLimitsAmpsFloat;
-  printf("CHARGING LIMIT VOLTS: %d, CHARGING LIMIT AMPS: %d", chargingLimitsVolts, chargingLimitsAmps);
+  printf("CHARGING LIMIT VOLTS: %d, CHARGING LIMIT AMPS: %d\n",
+         chargingLimitsVolts, chargingLimitsAmps);
 
   ptr->data[0] = (chargingLimitsVolts >> 8) & 0xFF;
   ptr->data[1] = chargingLimitsVolts & 0xFF;
