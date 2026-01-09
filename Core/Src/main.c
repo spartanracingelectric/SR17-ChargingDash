@@ -60,6 +60,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 CAN_HandleTypeDef hcan1;
 
+CRC_HandleTypeDef hcrc;
+
 I2C_HandleTypeDef hi2c2;
 
 SPI_HandleTypeDef hspi1;
@@ -95,6 +97,7 @@ static void MX_TIM3_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
 
 // PRINTF SUPPORT VIA UART - BEGIN
@@ -194,6 +197,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_SPI1_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 
   // INIT DISPLAY
@@ -221,8 +225,6 @@ int main(void)
   
    // TODO: better init for GUI
   // TEMP STUFF 1 END
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -232,7 +234,6 @@ int main(void)
 
     //int fan_speed = READ_THERM(therm_outlet, THERM_RESIST);
     // FAN_SPD_CTRL(50);
-
     //uint8_t data = currentBmsAndElconData.BMS_sumOfCells;
     //HAL_I2C_Master_Transmit(&hi2c2, 0x04 << 1, &data, 1, 10);
     // Charger_printBmsAndElconData(&currentBmsAndElconData);
@@ -244,7 +245,6 @@ int main(void)
 
     // ChargingProfile_testEEPROM();
 
-    HAL_Delay(100);
     // TODO: CHECK ALL LEDS AND PERIPHERALS WORK
     // Display_updateState();
     // Charger_handleCharging(&charging_msg, &balancing_msg);
@@ -391,7 +391,7 @@ static void MX_CAN1_Init(void)
   hcan1.Init.TimeTriggeredMode = DISABLE;
   hcan1.Init.AutoBusOff = DISABLE;
   hcan1.Init.AutoWakeUp = DISABLE;
-  hcan1.Init.AutoRetransmission = ENABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
   hcan1.Init.ReceiveFifoLocked = DISABLE;
   hcan1.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan1) != HAL_OK)
@@ -401,6 +401,32 @@ static void MX_CAN1_Init(void)
   /* USER CODE BEGIN CAN1_Init 2 */
 
   /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
 
 }
 

@@ -47,7 +47,7 @@ HAL_StatusTypeDef EEPROM_readData(uint16_t address, uint8_t *rxBuffer, uint16_t 
     
     uint8_t cmd[2];
     cmd[0] = EEPROM_buildReadCommand(address);
-    cmd[1] = (uint8_t)(address & 0xFF);
+    cmd[1] = (uint8_t)address;
 
     EEPROM_csLow();
     HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, cmd, 2, HAL_MAX_DELAY);
@@ -106,7 +106,7 @@ HAL_StatusTypeDef EEPROM_writePage(uint16_t address, uint8_t *txBuffer, uint16_t
     
     uint8_t cmd[2];
     cmd[0] = EEPROM_buildWriteCommand(address);
-    cmd[1] = (uint8_t)(address & 0xFF);
+    cmd[1] = (uint8_t)address;
 
     EEPROM_csLow();
     status = HAL_SPI_Transmit(&hspi1, cmd, 2, HAL_MAX_DELAY);

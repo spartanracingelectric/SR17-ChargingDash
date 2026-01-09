@@ -62,6 +62,11 @@
 			<locationURI>PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_crc.c</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_crc.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_dma.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c</locationURI>
