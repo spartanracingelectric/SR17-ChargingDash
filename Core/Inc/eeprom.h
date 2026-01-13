@@ -14,7 +14,6 @@
 #define EEPROM_SIZE_BYTES 512
 #define EEPROM_PAGE_SIZE_BYTES 16
 
-
 HAL_StatusTypeDef EEPROM_enableWrite(void);
 uint8_t EEPROM_buildReadCommand(uint16_t address);
 uint8_t EEPROM_buildWriteCommand(uint16_t address);
@@ -23,8 +22,6 @@ void EEPROM_csHigh(void);
 HAL_StatusTypeDef EEPROM_readData(uint16_t address, uint8_t *rxBuffer, uint16_t length);
 HAL_StatusTypeDef EEPROM_writeData(uint16_t address, uint8_t *txBuffer, uint16_t length);
 HAL_StatusTypeDef EEPROM_writePage(uint16_t address, uint8_t *txBuffer, uint16_t length);
-
-
 
 extern SPI_HandleTypeDef hspi1;
 

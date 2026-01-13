@@ -2,22 +2,23 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
+#include "graphics.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
-#include "graphics.h"
 
-typedef struct  {
+typedef struct
+{
 	char name[5];
 	uint16_t current;
 	uint16_t voltage;
 } profile;
 
-
-typedef enum {
+typedef enum
+{
 	DISPLAY_STATE_NAVIGATION,
 	DISPLAY_STATE_HOME,
 	DISPLAY_STATE_CHARGING_PROFILES,
@@ -62,7 +63,5 @@ void Display_drawLongScrollBar(int currentView, int numberOfViews);
 void Display_clear();
 void Display_forceI2CReset();
 void Display_updateScreen();
-
-
 
 #endif

@@ -9,10 +9,11 @@
 #define FLAG_622 (1 << 2)
 #define FLAG_604 (1 << 3)
 
-typedef struct {
-    CAN_TxHeaderTypeDef TxHeader;
-    uint32_t TxMailbox;
-    uint8_t data[8];
+typedef struct
+{
+	CAN_TxHeaderTypeDef TxHeader;
+	uint32_t TxMailbox;
+	uint8_t data[8];
 } CANMessage;
 
 extern CAN_HandleTypeDef hcan1;
