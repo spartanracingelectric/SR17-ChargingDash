@@ -31,6 +31,8 @@
 #include "charging_profile.h"
 #include "display.h"
 #include "eeprom.h"
+#include "j1772.h"
+#include "stm32f1xx_hal_tim.h"
 
 /* USER CODE END Includes */
 
@@ -222,6 +224,7 @@ int main(void)
 	HAL_TIM_Base_Start(&htim3);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_buffer, 2);
 
+	J1772_init();
 	HAL_Delay(1000);
 	therm_inlet = &adc_buffer[0];
 	therm_outlet = &adc_buffer[1];
