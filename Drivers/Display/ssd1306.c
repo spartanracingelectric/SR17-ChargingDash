@@ -1,11 +1,12 @@
 #include "ssd1306.h"
+#include "stm32f1xx_hal_def.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>  // For memcpy
 
 #if defined(SSD1306_USE_I2C)
 
-static uint8_t ssd1306LastStatus = 0;
+static HAL_StatusTypeDef ssd1306LastStatus = 0;
 
 void ssd1306_Reset(void) {
     /* for I2C - do nothing */
@@ -23,7 +24,7 @@ void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
     ssd1306LastStatus = status;  
 }
 
-uint8_t ssd1306_Custom_GetLastStatus() {
+HAL_StatusTypeDef ssd1306_Custom_GetLastStatus(void) {
     return ssd1306LastStatus;
 }
 

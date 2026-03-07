@@ -151,6 +151,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 	if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == elconBmsFilterIDs[3])
 	{
+		printf("receiving CAN message from elcon\n");
 		currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
 		currentBmsAndElconData.ELCON_outCurrent = ((RxData[2] << 8) | RxData[3]) * 0.1;
 		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
@@ -158,6 +159,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
 		currentBmsAndElconData.ELCON_fault[1] = RxData[4] & 0x02;
 		currentBmsAndElconData.ELCON_fault[0] = RxData[4] & 0x01;
+		printf("RX: %u %u %u %u %u %u %u %u\n",RxData[0], RxData[1], RxData[2], RxData[3], RxData[4], RxData[5], RxData[6], RxData[7]);
+		for (int i = 0; i < 5; i++)
+		{
+			printf("ELCON FAULT INDEX: %d VALUE: %d\n", i, currentBmsAndElconData.ELCON_fault[i]);
+		}
 	}
 
 	if (RxHeader.IDE == CAN_ID_STD && time_difference > bms_can_debounce_ms)

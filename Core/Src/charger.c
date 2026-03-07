@@ -67,7 +67,7 @@ void Charger_handleCharging(CANMessage *charging_msg, CANMessage *balancing_msg)
 		currentChargerState = CHARGER_STATE_IDLE;
 		CAN_Charge(charging_msg, LIMIT_VOLTS, LIMIT_AMPS, false);
 		CAN_Balance(balancing_msg, false);
-		HAL_GPIO_WritePin(GPIOA, LED_BAL_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOA, LED_BAL_Pin, GPIO_PIN_RESET); 
 		nextDisplayState = DISPLAY_STATE_ERRORS;
 		return;
 	}
@@ -140,12 +140,14 @@ void Charger_printPinStates()
 	GPIO_PinState IN_HVIL_ACUM_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_ACUM_GPIO_Port, IN_HVIL_ACUM_Pin);
 	GPIO_PinState IN_HVIL_FSW_STATE = HAL_GPIO_ReadPin(IN_HVIL_FSW_GPIO_Port, IN_HVIL_FSW_Pin);
 	GPIO_PinState RTC_SW_STATE = HAL_GPIO_ReadPin(IN_RTC_SW_GPIO_Port, IN_RTC_SW_Pin);
+	GPIO_PinState PLUG_CONNECTION_STATE = HAL_GPIO_ReadPin(GPIOC, PP_SIGNAL_Pin);
 	printf("Charger Pin States\n");
 	printf("IN_HVIL_ESTOP: %s\n", IN_HVIL_ESTOP_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
 	printf("IN_HVIL_TERM : %s\n", IN_HVIL_TERM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
 	printf("IN_HVIL_ACUM : %s\n", IN_HVIL_ACUM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
 	printf("IN_HVIL_FSW  : %s\n", IN_HVIL_FSW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
 	printf("RTC_SW       : %s\n", RTC_SW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
+	printf("PLUG STATE   : %s\n", PLUG_CONNECTION_STATE == GPIO_PIN_SET ? "SET" : "RESET");
 }
 
 // TODO: Check these conditions
@@ -266,3 +268,5 @@ void Charger_printBmsAndElconData(const volatile bmsAndElconData *d)
 	}
 	printf("]\n");
 }
+
+

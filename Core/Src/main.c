@@ -252,9 +252,12 @@ int main(void)
 		// ChargingProfile_testEEPROM();
 
 		// TODO: CHECK ALL LEDS AND PERIPHERALS WORK
-		// Display_updateState();
-		// Charger_handleCharging(&charging_msg, &balancing_msg);
+		printf("TEST\n");
+		Display_updateState();
+		// printf("test\n");
+		//Charger_handleCharging(&charging_msg, &balancing_msg);
 		// printf("test");
+
 
 		/* USER CODE END WHILE */
 

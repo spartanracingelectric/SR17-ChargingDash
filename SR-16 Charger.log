@@ -1,0 +1,16 @@
+Conversion Warnings Log
+
+
+MSG_ID: 419385573 	MSG_TYPE: X 	MSG_NAME: Status
+	SIG_NAME: OutputVoltage, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: OutputCurrent, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: HWStatus, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Temperature, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: InputVoltage, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: State, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: CommunicationState, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 403105268 	MSG_TYPE: X 	MSG_NAME: ChargingLimits
+	SIG_NAME: MaxVoltage, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: MaxCurrent, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Control, STATUS: Invalid Max or Min value., ACTION: Value Set to default

@@ -208,7 +208,7 @@ void ssd1306_Reset(void);
 void ssd1306_WriteCommand(uint8_t byte);
 void ssd1306_WriteData(uint8_t* buffer, size_t buff_size);
 SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len);
-uint8_t ssd1306_Custom_GetLastStatus();
+HAL_StatusTypeDef ssd1306_Custom_GetLastStatus(void);
 
 _END_STD_C
 

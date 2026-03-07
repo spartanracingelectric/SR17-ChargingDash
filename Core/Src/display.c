@@ -1,6 +1,7 @@
 // Written by Ayman Alamayri in Dec 2024
 #include "display.h"
 #include "charger.h"
+#include "ssd1306.h"
 #include <stdio.h>
 
 profile allProfiles[] = {
@@ -35,18 +36,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if (GPIO_Pin == BTN_UP_Pin)
 			{
 				selectedOption--;
+				printf("BUTTON 1\n"); //BACK
 			}
 			else if (GPIO_Pin == BTN_DWN_Pin)
 			{
 				selectedOption++;
+				printf("BUTTON 2\n"); //SELECT
 			}
 			else if (GPIO_Pin == BTN_SEL_Pin)
 			{
 				selectPressed = true;
+				printf("BUTTON 3\n");  //DOWN
 			}
 			else if (GPIO_Pin == BTN_BCK_Pin)
 			{
 				backPressed = true;
+				printf("BUTTON 4\n"); //UP
 			}
 			buttonInterruptPreviousTime = buttonInterruptCurrentTime;
 		}
@@ -243,9 +248,22 @@ void Display_forceI2CReset()
 void Display_updateScreen()
 {
 	ssd1306_UpdateScreen();
-	if (ssd1306_Custom_GetLastStatus() != HAL_OK)
+	HAL_StatusTypeDef status = ssd1306_Custom_GetLastStatus();
+	if (status == HAL_OK)
 	{
-		Display_forceI2CReset();
+		printf("HAL_OK\n");
+	}
+	else if (status == HAL_ERROR)
+	{
+		printf("HAL_ERROR\n");
+	}
+	else if (status == HAL_BUSY) 
+	{
+		printf("HAL_BUSY\n");
+	}
+	else if (status == HAL_TIMEOUT) 
+	{
+		printf("HAL_TIMEOUT\n");
 	}
 }
 
