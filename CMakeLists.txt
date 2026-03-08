@@ -56,6 +56,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/can_interface.c
     Core/Src/eeprom.c
 	Core/Src/j1772.c
+	Core/Src/cooling.c
     Drivers/Display/ssd1306.c
     Drivers/Display/ssd1306_fonts.c
 )

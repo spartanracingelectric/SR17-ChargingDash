@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "can_interface.h"
+#include "cooling.h"
 #include "charger.h"
 #include "charging_profile.h"
 #include "display.h"
@@ -116,39 +117,8 @@ PUTCHAR_PROTOTYPE
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// FAN SPEED CONTROL
-void FAN_SPD_CTRL(uint32_t fan_speed)
-{
-	if (fan_speed <= 100)
-	{
-		TIM3->CCR1 = fan_speed;
-	}
-	else
-	{
-		// TODO: Throw error
-	}
-}
-
 // TODO: fix
 // READ THERMISTOR VALUE
-float READ_THERM(uint16_t *adc_thermistor, uint16_t therm_first_resistance)
-{
-	if (adc_thermistor == NULL || *adc_thermistor == 0)
-		return -273.15;
-	float calibration_a = 1.462805229e-3;
-	float calibration_b = 2.310582766e-4;
-	float calibration_c = 1.189005910e-7;
-	float thermistor_voltage = (*adc_thermistor / 4095.0) * 3.3;
-	if (thermistor_voltage >= 3.3f)
-		thermistor_voltage = 3.299;
-	float therm_resistance = (thermistor_voltage * therm_first_resistance) / (3.3 - thermistor_voltage);
-	if (therm_resistance <= 0)
-		return -273.15;
-	float temperature =
-		(1 / (calibration_a + calibration_b * log(therm_resistance) + calibration_c * pow(log(therm_resistance), 3))) -
-		273.15;
-	return temperature;
-}
 
 // TODO: complete
 // SEND i2c to Atiny for SOC
@@ -229,6 +199,7 @@ int main(void)
 	therm_inlet = &adc_buffer[0];
 	therm_outlet = &adc_buffer[1];
 
+	// Cooling_commandFanSpeed(10);
 	// TODO: better init for GUI
 	// TEMP STUFF 1 END
 	/* USER CODE END 2 */
@@ -238,10 +209,6 @@ int main(void)
 	while (1)
 	{
 
-		// int fan_speed = READ_THERM(therm_outlet, THERM_RESIST);
-		//  FAN_SPD_CTRL(50);
-		// uint8_t data = currentBmsAndElconData.BMS_sumOfCells;
-		// HAL_I2C_Master_Transmit(&hi2c2, 0x04 << 1, &data, 1, 10);
 		//  Charger_printBmsAndElconData(&currentBmsAndElconData);
 		//  float voltage = 0.1f;
 		//  float amp = 0.5f;
