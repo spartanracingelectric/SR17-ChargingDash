@@ -154,20 +154,17 @@ void Charger_printPinStates()
 bool Charger_isChargerSafe()
 {
 	GPIO_PinState IN_HVIL_CHAR_Pin_State;
-	GPIO_PinState IN_HVIL_ESTOP_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_ESTOP_GPIO_Port, IN_HVIL_ESTOP_Pin);
-	GPIO_PinState IN_HVIL_TERM_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_TERM_GPIO_Port, IN_HVIL_TERM_Pin);
-	GPIO_PinState IN_HVIL_ACUM_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_ACUM_GPIO_Port, IN_HVIL_ACUM_Pin);
-	if (IN_HVIL_ESTOP_Pin_State == GPIO_PIN_SET || IN_HVIL_CHAR_Pin_State == GPIO_PIN_SET ||
-		IN_HVIL_TERM_Pin_State == GPIO_PIN_SET || IN_HVIL_ACUM_Pin_State == GPIO_PIN_SET)
+	GPIO_PinState IN_HVIL_ESTOP_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_ESTOP_GPIO_Port, IN_HVIL_ESTOP_Pin); //SET WHEN NOT PRESSED
+	GPIO_PinState IN_HVIL_TERM_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_TERM_GPIO_Port, IN_HVIL_TERM_Pin); //RESET WHEN HVIL SWITCHED OFF
+	GPIO_PinState IN_HVIL_ACUM_Pin_State = HAL_GPIO_ReadPin(IN_HVIL_ACUM_GPIO_Port, IN_HVIL_ACUM_Pin); // SET when ACUM HVIL DETECTED
+	if (IN_HVIL_ESTOP_Pin_State == GPIO_PIN_SET && IN_HVIL_TERM_Pin_State == GPIO_PIN_SET && IN_HVIL_ACUM_Pin_State == GPIO_PIN_SET)
 	{
 		return true;
 	}
-	else if (IN_HVIL_ESTOP_Pin_State == GPIO_PIN_RESET && IN_HVIL_CHAR_Pin_State == GPIO_PIN_RESET &&
-			 IN_HVIL_TERM_Pin_State == GPIO_PIN_RESET && IN_HVIL_ACUM_Pin_State == GPIO_PIN_RESET)
+	else
 	{
 		return false;
 	}
-	return false;
 }
 
 bool Charger_isHvilSwitchFlipped()

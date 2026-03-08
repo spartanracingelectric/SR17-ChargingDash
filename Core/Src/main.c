@@ -199,7 +199,7 @@ int main(void)
 	therm_inlet = &adc_buffer[0];
 	therm_outlet = &adc_buffer[1];
 
-	// Cooling_commandFanSpeed(10);
+	//Cooling_commandFanSpeed(50);
 	// TODO: better init for GUI
 	// TEMP STUFF 1 END
 	/* USER CODE END 2 */
@@ -209,22 +209,21 @@ int main(void)
 	while (1)
 	{
 
-		//  Charger_printBmsAndElconData(&currentBmsAndElconData);
 		//  float voltage = 0.1f;
 		//  float amp = 0.5f;
 		//  CAN_Charge(&charging_msg, voltage, amp, true);
-		//  HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);
 		//  HAL_Delay(1000);
 
 		// ChargingProfile_testEEPROM();
 
-		// TODO: CHECK ALL LEDS AND PERIPHERALS WORK
-		printf("TEST\n");
+		Charger_printBmsAndElconData(&currentBmsAndElconData);
+		//Charger_printPinStates();
 		Display_updateState();
-		// printf("test\n");
-		// Charger_handleCharging(&charging_msg, &balancing_msg);
+		// printf("OUTLET MAX AMPS: %f\n", J1772_getMaxCurrent());
+		// printf("OUTLET PLUG DETECTED: %d\n", J1772_isPlugConnected());
+		Charger_handleCharging(&charging_msg, &balancing_msg);
 		// printf("test");
-
+		HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
