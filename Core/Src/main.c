@@ -255,9 +255,8 @@ int main(void)
 		printf("TEST\n");
 		Display_updateState();
 		// printf("test\n");
-		//Charger_handleCharging(&charging_msg, &balancing_msg);
+		// Charger_handleCharging(&charging_msg, &balancing_msg);
 		// printf("test");
-
 
 		/* USER CODE END WHILE */
 
@@ -767,17 +766,17 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : BTN_UP_Pin BTN_DWN_Pin BTN_SEL_Pin */
-	GPIO_InitStruct.Pin = BTN_UP_Pin | BTN_DWN_Pin | BTN_SEL_Pin;
+	/*Configure GPIO pins : BTN_BCK_Pin BTN_SEL_Pin BTN_DWN_Pin */
+	GPIO_InitStruct.Pin = BTN_BCK_Pin | BTN_SEL_Pin | BTN_DWN_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : BTN_BCK_Pin */
-	GPIO_InitStruct.Pin = BTN_BCK_Pin;
+	/*Configure GPIO pin : BTN_UP_Pin */
+	GPIO_InitStruct.Pin = BTN_UP_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	HAL_GPIO_Init(BTN_BCK_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(BTN_UP_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : HEARTBEAT_LED_Pin */
 	GPIO_InitStruct.Pin = HEARTBEAT_LED_Pin;
