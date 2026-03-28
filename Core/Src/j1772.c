@@ -10,7 +10,7 @@ float dutyCycle;
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 	uint32_t periodTicks = 0;
-	printf("IN IC CALLBACK\n");
+	// printf("IN IC CALLBACK\n");
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 	{
 		periodTicks = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);

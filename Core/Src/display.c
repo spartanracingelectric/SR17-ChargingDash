@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 profile allProfiles[] = {
-	{"P1", 3, 355},  {"P2", 4, 355},  {"P3", 20, 355}, {"P4", 3, 385},  {"P5", 15, 385},
+	{"P1", 3, 525},  {"P2", 4, 355},  {"P3", 20, 355}, {"P4", 3, 385},  {"P5", 15, 385},
 	{"P6", 20, 385}, {"P7", 10, 401}, {"P8", 20, 400}, {"P9", 10, 403},
 };
 
@@ -36,22 +36,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if (GPIO_Pin == BTN_UP_Pin)
 			{
 				selectedOption--;
-				printf("BUTTON 1\n"); //BACK
+				printf("BUTTON 1\n"); // BACK
 			}
 			else if (GPIO_Pin == BTN_DWN_Pin)
 			{
 				selectedOption++;
-				printf("BUTTON 2\n"); //SELECT
+				printf("BUTTON 2\n"); // SELECT
 			}
 			else if (GPIO_Pin == BTN_SEL_Pin)
 			{
 				selectPressed = true;
-				printf("BUTTON 3\n");  //DOWN
+				printf("BUTTON 3\n"); // DOWN
 			}
 			else if (GPIO_Pin == BTN_BCK_Pin)
 			{
 				backPressed = true;
-				printf("BUTTON 4\n"); //UP
+				printf("BUTTON 4\n"); // UP
 			}
 			buttonInterruptPreviousTime = buttonInterruptCurrentTime;
 		}
@@ -251,19 +251,19 @@ void Display_updateScreen()
 	HAL_StatusTypeDef status = ssd1306_Custom_GetLastStatus();
 	if (status == HAL_OK)
 	{
-		printf("HAL_OK\n");
+		// printf("HAL_OK\n");
 	}
 	else if (status == HAL_ERROR)
 	{
-		printf("HAL_ERROR\n");
+		// printf("HAL_ERROR\n");
 	}
-	else if (status == HAL_BUSY) 
+	else if (status == HAL_BUSY)
 	{
-		printf("HAL_BUSY\n");
+		// printf("HAL_BUSY\n");
 	}
-	else if (status == HAL_TIMEOUT) 
+	else if (status == HAL_TIMEOUT)
 	{
-		printf("HAL_TIMEOUT\n");
+		// printf("HAL_TIMEOUT\n");
 	}
 }
 
@@ -767,7 +767,7 @@ void Display_drawTitleBar(char title[])
 			break;
 		}
 	}
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		if (currentBmsAndElconData.BMS_fault[i] == 1)
 		{
@@ -913,8 +913,8 @@ displayState Display_displayErrors()
 	static const char *elconErrorMessages[5] = {"HW Fail", "Charger Overtemp", "Wrong Input Volt", "No Batt Volt",
 												"Comms Timeout"};
 
-	static const char *bmsErrorMessages[6] = {"Cell Overtemp", "Cell Imbalance", "Cell Undervolt",
-											  "Cell Overvolt", "Pack Low Volt",  "Pack High Volt"};
+	static const char *bmsErrorMessages[8] = {"Cell Overvolt", "Cell Undervolt", "Open Wire",       "PEC Error",
+											  "Cell Overtemp", "Cell Undertemp", "Redun Volt Diff", "Redun Temp Diff"};
 
 	char currentErrors[11][100];
 	int currentErrorIndex = 0;
@@ -927,7 +927,7 @@ displayState Display_displayErrors()
 			currentErrorIndex++;
 		}
 	}
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		if (currentBmsAndElconData.BMS_fault[i] == 1)
 		{

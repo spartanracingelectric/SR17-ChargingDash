@@ -39,7 +39,7 @@ typedef struct
 	float BMS_stateOfCharge; // TODO: not float
 	float BMS_packImbalance;
 	float BMS_balanceStatus;
-	bool BMS_fault[6];
+	bool BMS_fault[8];
 	/*
 	  Bit 0: Cell High Temp Fault
 	  Bit 1: Cell Volt Imbalance Fault

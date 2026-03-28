@@ -209,7 +209,7 @@ bool Charger_checkFaultStatus()
 			break;
 		}
 	}
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		if (currentBmsAndElconData.BMS_fault[i])
 		{

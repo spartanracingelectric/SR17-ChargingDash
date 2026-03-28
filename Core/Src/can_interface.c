@@ -8,14 +8,6 @@ int bms_can_current_time = 0;
 int bms_can_previous_time = 0;
 int bms_can_debounce_ms = 1000;
 
-uint32_t elconBmsFilterIDs[5] = {
-	0x600,      // BMS imbalance
-	0x621,      // BMS soc
-	0x622,      // BMS volt/temp high+low
-	0x18FF50E5, // Elcon
-	0x604,      // BMS balance status
-};
-
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
 
@@ -31,7 +23,25 @@ HAL_StatusTypeDef CAN_Activate(void)
 
 HAL_StatusTypeDef CAN_Send(CANMessage *m)
 {
-	return HAL_CAN_AddTxMessage(&hcan1, &m->TxHeader, (uint8_t *)m->data, &m->TxMailbox);
+    uint32_t previousTime = HAL_GetTick();
+
+    while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0) {
+    	// printf("waiting\n");
+    	if(HAL_GetTick() - previousTime > CAN_TIME_OUT_THRESHOLD_MS){
+    		return HAL_TIMEOUT;
+    	}
+    }
+
+	HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&hcan1, &m->TxHeader, (uint8_t *)m->data, &m->TxMailbox);
+
+    if (status != HAL_OK)
+    {
+        printf("CAN SEND FAILED: %d\n", status);
+        printf("TX free level: %lu\n", HAL_CAN_GetTxMailboxesFreeLevel(&hcan1));
+        printf("CAN error code: 0x%08lX\n", HAL_CAN_GetError(&hcan1));
+    }
+
+    return status;
 }
 
 void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_length)
@@ -44,38 +54,35 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
 	canMsgPtr->TxHeader.RTR = CAN_RTR_DATA;
 	canMsgPtr->TxHeader.DLC = dlc_length;
 
-	// ----- Filter 0: BMS ID 0x600 -----
 	CAN_FilterTypeDef filter0 = {0};
 	filter0.FilterBank = 0;
 	filter0.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter0.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter0.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	filter0.FilterActivation = ENABLE;
-	filter0.FilterIdHigh = (elconBmsFilterIDs[0] << 5) & 0xFFFF;
+	filter0.FilterIdHigh = (BMS_PACK_SUMMARY_TWO_CAN_ID << 5) & 0xFFFF;
 	filter0.FilterIdLow = 0;
 	filter0.FilterMaskIdHigh = 0xFFFF;
 	filter0.FilterMaskIdLow = 0xFFFF;
 
-	// ----- Filter 1: BMS ID 0x621 -----
 	CAN_FilterTypeDef filter1 = {0};
 	filter1.FilterBank = 1;
 	filter1.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter1.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter1.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	filter1.FilterActivation = ENABLE;
-	filter1.FilterIdHigh = (elconBmsFilterIDs[1] << 5) & 0xFFFF;
+	filter1.FilterIdHigh = (BMS_BALANCE_STATUS_CAN_ID << 5) & 0xFFFF;
 	filter1.FilterIdLow = 0;
 	filter1.FilterMaskIdHigh = 0xFFFF;
 	filter1.FilterMaskIdLow = 0xFFFF;
 
-	// ----- Filter 2: BMS ID 0x622 -----
 	CAN_FilterTypeDef filter2 = {0};
 	filter2.FilterBank = 2;
 	filter2.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter2.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter2.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	filter2.FilterActivation = ENABLE;
-	filter2.FilterIdHigh = (elconBmsFilterIDs[2] << 5) & 0xFFFF;
+	filter2.FilterIdHigh = (BMS_PACK_SUMMARY_ONE_CAN_ID << 5) & 0xFFFF;
 	filter2.FilterIdLow = 0;
 	filter2.FilterMaskIdHigh = 0xFFFF;
 	filter2.FilterMaskIdLow = 0xFFFF;
@@ -87,22 +94,32 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
 	filter3.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter3.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	filter3.FilterActivation = ENABLE;
-	filter3.FilterIdHigh = (elconBmsFilterIDs[3] >> 13) & 0xFFFF;
-	filter3.FilterIdLow = ((elconBmsFilterIDs[3] << 3) & 0xFFFF) | (1 << 2);
+	filter3.FilterIdHigh = (ELCON_OUTPUT_CAN_ID >> 13) & 0xFFFF;
+	filter3.FilterIdLow = ((ELCON_OUTPUT_CAN_ID << 3) & 0xFFFF) | (1 << 2);
 	filter3.FilterMaskIdHigh = 0xFFFF;
 	filter3.FilterMaskIdLow = 0xFFFF;
 
-	// ----- Filter 4: BMS Balance Status 0x604 -----
 	CAN_FilterTypeDef filter4 = {0};
 	filter4.FilterBank = 4;
 	filter4.FilterMode = CAN_FILTERMODE_IDMASK;
 	filter4.FilterScale = CAN_FILTERSCALE_32BIT;
 	filter4.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	filter4.FilterActivation = ENABLE;
-	filter4.FilterIdHigh = (elconBmsFilterIDs[4] << 5) & 0xFFFF;
+	filter4.FilterIdHigh = (BMS_STATE_OF_CHARGE_CAN_ID << 5) & 0xFFFF;
 	filter4.FilterIdLow = 0;
 	filter4.FilterMaskIdHigh = 0xFFFF;
 	filter4.FilterMaskIdLow = 0xFFFF;
+
+	CAN_FilterTypeDef filter5 = {0};
+	filter5.FilterBank = 5;
+	filter5.FilterMode = CAN_FILTERMODE_IDMASK;
+	filter5.FilterScale = CAN_FILTERSCALE_32BIT;
+	filter5.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+	filter5.FilterActivation = ENABLE;
+	filter5.FilterIdHigh = (BMS_FAULT_AND_WARNING_SUMMARY_CAN_ID << 5) & 0xFFFF;
+	filter5.FilterIdLow = 0;
+	filter5.FilterMaskIdHigh = 0xFFFF;
+	filter5.FilterMaskIdLow = 0xFFFF;
 
 	// Accept everything (for testing)
 	CAN_FilterTypeDef f = {0};
@@ -122,6 +139,7 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
 	HAL_CAN_ConfigFilter(&hcan1, &filter2);
 	HAL_CAN_ConfigFilter(&hcan1, &filter3);
 	HAL_CAN_ConfigFilter(&hcan1, &filter4);
+	HAL_CAN_ConfigFilter(&hcan1, &filter5);
 	// HAL_CAN_ConfigFilter(&hcan1, &f);
 
 	HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
@@ -149,9 +167,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	bms_can_current_time = HAL_GetTick();
 	int time_difference = bms_can_current_time - bms_can_previous_time;
 
-	if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == elconBmsFilterIDs[3])
+	if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == ELCON_OUTPUT_CAN_ID)
 	{
-		printf("receiving CAN message from elcon\n");
 		currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
 		currentBmsAndElconData.ELCON_outCurrent = ((RxData[2] << 8) | RxData[3]) * 0.1;
 		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
@@ -159,54 +176,65 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
 		currentBmsAndElconData.ELCON_fault[1] = RxData[4] & 0x02;
 		currentBmsAndElconData.ELCON_fault[0] = RxData[4] & 0x01;
-		printf("RX: %u %u %u %u %u %u %u %u\n",RxData[0], RxData[1], RxData[2], RxData[3], RxData[4], RxData[5], RxData[6], RxData[7]);
-		for (int i = 0; i < 5; i++)
-		{
-			printf("ELCON FAULT INDEX: %d VALUE: %d\n", i, currentBmsAndElconData.ELCON_fault[i]);
-		}
 	}
 
 	if (RxHeader.IDE == CAN_ID_STD && time_difference > bms_can_debounce_ms)
 	{
-		if (RxHeader.StdId == elconBmsFilterIDs[0])
+		if (RxHeader.StdId == BMS_PACK_SUMMARY_ONE_CAN_ID)
 		{
-			bmsFlags |= FLAG_600;
-			currentBmsAndElconData.BMS_sumOfCells = ((RxData[7] << 8) | RxData[6]) * 0.01;
-			currentBmsAndElconData.BMS_avgVolt = currentBmsAndElconData.BMS_sumOfCells / 96;
-			currentBmsAndElconData.BMS_packImbalance = ((RxData[3] << 8) | RxData[2]) * 0.0001;
+			bmsFlags |= FLAG_PACK_SUMMARY_ONE;
+			int16_t rawMaxVolt = (int16_t)(((uint16_t)RxData[1] << 8) | RxData[0]);
+			int16_t rawMinVolt = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
+			int8_t rawMaxTemp = (int8_t)RxData[4];
+			int8_t rawMinTemp = (int8_t)RxData[5];
+			uint16_t rawPackVolt = (uint16_t)(((uint16_t)RxData[7] << 8) | RxData[6]);
 
-			uint8_t faultByte = RxData[1];
-			currentBmsAndElconData.BMS_fault[0] = ((faultByte >> 2) & 0x1); // Cell High Temp Fault
-			currentBmsAndElconData.BMS_fault[1] = ((faultByte >> 3) & 0x1); // Cell Volt Imbalance Fault
-			currentBmsAndElconData.BMS_fault[2] = ((faultByte >> 4) & 0x1); // Cell Low Volt Fault
-			currentBmsAndElconData.BMS_fault[3] = ((faultByte >> 5) & 0x1); // Cell High Volt Fault
-			currentBmsAndElconData.BMS_fault[4] = ((faultByte >> 6) & 0x1); // Pack Low Volt Fault
-			currentBmsAndElconData.BMS_fault[5] = ((faultByte >> 7) & 0x1); // Pack High Volt Fault
+			currentBmsAndElconData.BMS_maxVolt = rawMaxVolt * 0.001f;
+			currentBmsAndElconData.BMS_minVolt = rawMinVolt * 0.001f;
+			currentBmsAndElconData.BMS_maxTemp = rawMaxTemp;
+			currentBmsAndElconData.BMS_minTemp = rawMinTemp;
+			currentBmsAndElconData.BMS_sumOfCells = rawPackVolt * 0.01f;
 		}
-		else if (RxHeader.StdId == elconBmsFilterIDs[1])
+		else if (RxHeader.StdId == BMS_PACK_SUMMARY_TWO_CAN_ID)
 		{
-			bmsFlags |= FLAG_621;
-			currentBmsAndElconData.BMS_stateOfCharge = RxData[2];
-		}
-		else if (RxHeader.StdId == elconBmsFilterIDs[2])
-		{
-			bmsFlags |= FLAG_622;
-			currentBmsAndElconData.BMS_minTemp = RxData[5];
-			currentBmsAndElconData.BMS_maxTemp = RxData[4];
-			currentBmsAndElconData.BMS_minVolt = ((RxData[3] << 8) | RxData[2]) * 0.0001;
-			currentBmsAndElconData.BMS_maxVolt = ((RxData[1] << 8) | RxData[0]) * 0.0001;
-		}
-		else if (RxHeader.StdId == elconBmsFilterIDs[4])
-		{
-			bmsFlags |= FLAG_604;
-			currentBmsAndElconData.BMS_balanceStatus = (RxData[0] & 0x01) ? 1 : 0;
-		}
+			bmsFlags |= FLAG_PACK_SUMMARY_TWO;
+			uint16_t rawImbalance_mV = ((uint16_t)RxData[1] << 8) | RxData[0];
+			int16_t rawAvgCellVoltage_mV = (int16_t)(((uint16_t)RxData[5] << 8) | RxData[4]);
 
-		if (bmsFlags == (FLAG_600 | FLAG_621 | FLAG_622 | FLAG_604))
-		{
-			bms_can_previous_time = bms_can_current_time;
-			bmsFlags = 0;
+			currentBmsAndElconData.BMS_packImbalance = rawImbalance_mV;
+			currentBmsAndElconData.BMS_avgVolt = rawAvgCellVoltage_mV;
 		}
+		else if (RxHeader.StdId == BMS_STATE_OF_CHARGE_CAN_ID)
+		{
+			bmsFlags |= FLAG_SOC;
+			// TODO: Parse SOC message
+		}
+		else if (RxHeader.StdId == BMS_FAULT_AND_WARNING_SUMMARY_CAN_ID)
+		{
+			bmsFlags |= FLAG_FAULT_AND_WARNING_SUMMARY;
+			uint8_t faultBits = RxData[2];
+
+			currentBmsAndElconData.BMS_fault[0] = (faultBits & (1 << 0)) ? 1 : 0; // Over Volt
+			currentBmsAndElconData.BMS_fault[1] = (faultBits & (1 << 1)) ? 1 : 0; // Under Volt
+			currentBmsAndElconData.BMS_fault[2] = (faultBits & (1 << 2)) ? 1 : 0; // Open Wire
+			currentBmsAndElconData.BMS_fault[3] = (faultBits & (1 << 3)) ? 1 : 0; // PEC
+			currentBmsAndElconData.BMS_fault[4] = (faultBits & (1 << 4)) ? 1 : 0; // Over Temp
+			currentBmsAndElconData.BMS_fault[5] = (faultBits & (1 << 5)) ? 1 : 0; // Under Temp
+			currentBmsAndElconData.BMS_fault[6] = (faultBits & (1 << 6)) ? 1 : 0; // Redundant Volt
+			currentBmsAndElconData.BMS_fault[7] = (faultBits & (1 << 7)) ? 1 : 0; // Redundant Temp
+		}
+	}
+	else if (RxHeader.StdId == BMS_BALANCE_STATUS_CAN_ID)
+	{
+		bmsFlags |= FLAG_BALANCE;
+		currentBmsAndElconData.BMS_balanceStatus = (RxData[0] & 0x01) ? 1 : 0;
+	}
+
+	if (bmsFlags ==
+		(FLAG_PACK_SUMMARY_ONE | FLAG_PACK_SUMMARY_TWO | FLAG_SOC | FLAG_BALANCE | FLAG_FAULT_AND_WARNING_SUMMARY))
+	{
+		bms_can_previous_time = bms_can_current_time;
+		bmsFlags = 0;
 	}
 }
 
