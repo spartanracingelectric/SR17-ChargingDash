@@ -9,8 +9,10 @@
 #include <sys/types.h>
 
 ChargingProfile defaultProfiles[MAX_DEFAULT_PROFILES] = {
-	{.currentCommand_A = 3, .voltageCommand_V = 525},    {.currentCommand_A = 8, .voltageCommand_V = 550},
-	{.currentCommand_A = 5, .voltageCommand_V = 570}, {.currentCommand_A = 10, .voltageCommand_V = 580},
+	{.currentCommand_A = 3, .voltageCommand_V = 525},
+	{.currentCommand_A = 8, .voltageCommand_V = 550},
+	{.currentCommand_A = 5, .voltageCommand_V = 570},
+	{.currentCommand_A = 10, .voltageCommand_V = 580},
 	{.currentCommand_A = 3, .voltageCommand_V = 500},
 };
 

@@ -19,18 +19,20 @@ profile allProfiles[] = {
 
 int numberOfProfiles = 9;
 
-int selectedOption = 0;
-bool selectPressed = false;
-bool backPressed = false;
-
 displayState currentDisplayState = DISPLAY_STATE_NAVIGATION;
 displayState nextDisplayState = DISPLAY_STATE_NAVIGATION;
+displayState previousDisplayState = DISPLAY_STATE_NAVIGATION;
 
 extern char codeBranch[10];
 extern char codeVersion[5];
 
 uint32_t buttonInterruptCurrentTime = 0;
 uint32_t buttonInterruptPreviousTime = 0;
+
+bool upPressed = false;
+bool downPressed = false;
+bool selectPressed = false;
+bool backPressed = false;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == BTN_UP_Pin || GPIO_Pin == BTN_DWN_Pin || GPIO_Pin == BTN_SEL_Pin || GPIO_Pin == BTN_BCK_Pin)
@@ -43,23 +45,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		{
 			if (GPIO_Pin == BTN_UP_Pin)
 			{
-				selectedOption--;
-				printf("BUTTON 1\n"); // BACK
+				upPressed = true;
+				printf("BUTTON 1\n");
 			}
 			else if (GPIO_Pin == BTN_DWN_Pin)
 			{
-				selectedOption++;
-				printf("BUTTON 2\n"); // SELECT
+				downPressed = true;
+				printf("BUTTON 2\n");
 			}
 			else if (GPIO_Pin == BTN_SEL_Pin)
 			{
 				selectPressed = true;
-				printf("BUTTON 3\n"); // DOWN
+				printf("BUTTON 3\n");
 			}
 			else if (GPIO_Pin == BTN_BCK_Pin)
 			{
 				backPressed = true;
-				printf("BUTTON 4\n"); // UP
+				printf("BUTTON 4\n");
 			}
 			buttonInterruptPreviousTime = buttonInterruptCurrentTime;
 		}
@@ -81,17 +83,20 @@ void DISP_KanoaSplash()
 	ssd1306_UpdateScreen();
 }
 
-void Display_init()
+void Display_init(void)
 {
 	ssd1306_Init();
 }
 
-displayState Display_updateState()
+displayState Display_updateState(void)
 {
 	if (currentDisplayState != nextDisplayState)
 	{
-		selectedOption = 0;
 		selectPressed = false;
+		upPressed = false;
+		downPressed = false;
+		backPressed = false;
+		previousDisplayState = currentDisplayState;
 		currentDisplayState = nextDisplayState;
 	}
 
@@ -105,6 +110,9 @@ displayState Display_updateState()
 		break;
 	case DISPLAY_STATE_CHARGING_PROFILES:
 		nextDisplayState = Display_displayChargingProfiles();
+		break;
+	case DISPLAY_STATE_ADD_CHARGING_PROFILE:
+		nextDisplayState = Display_displayAddChargingProfile();
 		break;
 	case DISPLAY_STATE_CHARGING_INITIALIZATION:
 		nextDisplayState = Display_displayChargingInitialization();
@@ -134,40 +142,24 @@ displayState Display_updateState()
 		nextDisplayState = Display_displayErrors();
 		break;
 	}
+
+	previousDisplayState = currentDisplayState; // TODO: idk
 	return nextDisplayState;
 }
 
-void Display_clear()
+void Display_clear(void)
 {
 	ssd1306_FillRectangle(0, 0, 127, 63, Black);
 }
 
-void Display_wrapSelectedOption(int numberOfOptions)
+displayState Display_displayNavigation(void)
 {
-	if (selectedOption > numberOfOptions - 1)
+	static int selectedOption = 0;
+	// Reset screen when entering for first time
+	if (previousDisplayState != DISPLAY_STATE_NAVIGATION)
 	{
 		selectedOption = 0;
 	}
-	if (selectedOption < 0)
-	{
-		selectedOption = numberOfOptions - 1;
-	}
-}
-
-void Display_checkSelectedOptionBounds(int numberOfOptions)
-{
-	if (selectedOption > numberOfOptions - 1)
-	{
-		selectedOption = 0;
-	}
-	if (selectedOption < 0)
-	{
-		selectedOption = numberOfOptions;
-	}
-}
-
-displayState Display_displayNavigation()
-{
 	static char *options[] = {"Home", "Charging", "Balancing", "Battery", "Charger Stats", "Errors", "Restart"};
 	int numberOfOptions = 7;
 	int y1 = 15;
@@ -176,9 +168,8 @@ displayState Display_displayNavigation()
 	int currentView = selectedOption / 4;
 	int startIndex = currentView * 4;
 
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
-
 	Display_drawTitleBar("Navigation");
 
 	for (int i = startIndex; i < startIndex + 4 && i < numberOfOptions; i++)
@@ -207,7 +198,7 @@ displayState Display_displayNavigation()
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -276,8 +267,13 @@ void Display_updateScreen()
 }
 
 // TODO: FINISH
-displayState Display_displayHome()
+displayState Display_displayHome(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_HOME)
+	{
+		selectedOption = 0;
+	}
 	char stateOfCharge[50];
 	char balancingStatus[50];
 
@@ -285,9 +281,9 @@ displayState Display_displayHome()
 	char chargerTemp[] = "Charger Tmp: N/A";
 	int numberOfOptions = 1;
 
-	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
+	Display_clear();
 	Display_drawTitleBar("Home");
 
 	ssd1306_SetCursor(1, 13);
@@ -301,13 +297,13 @@ displayState Display_displayHome()
 
 	char *navBarOptions[] = {"Nav"};
 	int firstNavBarOptionIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -317,7 +313,7 @@ displayState Display_displayHome()
 	return DISPLAY_STATE_HOME;
 }
 
-void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNavBarOptionIndex)
+void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNavBarOptionIndex, int selectedOption)
 {
 
 	int navBarOptionIndex = firstNavBarOptionIndex;
@@ -348,8 +344,13 @@ void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNav
 
 // TODO: Title should only display Balancing if charger state is balancing, or it should show BAL symbol if auto
 // balancing in charger state
-displayState Display_displayInChargingStatsTwo()
+displayState Display_displayInChargingStatsTwo(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_IN_CHARGING_STATS_TWO)
+	{
+		selectedOption = 0;
+	}
 	if (currentChargerState != CHARGER_STATE_CHARGING && currentChargerState != CHARGER_STATE_BALANCING)
 	{
 		return DISPLAY_STATE_NAVIGATION;
@@ -368,7 +369,7 @@ displayState Display_displayInChargingStatsTwo()
 	sprintf(sumOfCells, "Pack Volt: %.2fV", currentBmsAndElconData.BMS_sumOfCells);
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	bool isBalancing = (currentChargerState == CHARGER_STATE_BALANCING);
 
@@ -389,12 +390,12 @@ displayState Display_displayInChargingStatsTwo()
 
 	char *navBarOptions[1] = {isBalancing ? "Balancing 1" : "Charging 1"};
 	int firstNavBarOptonIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptonIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptonIndex, selectedOption);
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -404,8 +405,13 @@ displayState Display_displayInChargingStatsTwo()
 	return DISPLAY_STATE_IN_CHARGING_STATS_TWO;
 }
 
-displayState Display_displayChargingProfiles()
+displayState Display_displayChargingProfiles(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_CHARGING_PROFILES)
+	{
+		selectedOption = 0;
+	}
 	static int currentPage = 0;
 
 	int numAvailableProfiles = ChargingProfile_updateAvailableProfiles();
@@ -417,7 +423,7 @@ displayState Display_displayChargingProfiles()
 	}
 
 	Display_clear();
-	Display_drawTitleBar("Select Charging Profile");
+	Display_drawTitleBar("SELECT PROFILE");
 
 	int profileBoxStartY = PROFILE_BOX_START_Y_PX;
 	int profileBoxEndY = PROFILE_BOX_START_Y_PX + PROFILE_BOX_HEIGHT_PX;
@@ -461,10 +467,10 @@ displayState Display_displayChargingProfiles()
 	int navBarStartIndex = numProfilesOnCurrentPage;
 	int numNavBarOptions = 3;
 	int numOptions = numProfilesOnCurrentPage + numNavBarOptions;
-	Display_wrapSelectedOption(numOptions); // TODO: Maybe call this before drawing profile boxes
+	Display_handleUpDownPress(&selectedOption, numOptions);
 
 	char *navBarOptions[] = {"NEXT", "ADD", "MENU"};
-	Display_drawNavBar(navBarOptions, numNavBarOptions, navBarStartIndex);
+	Display_drawNavBar(navBarOptions, numNavBarOptions, navBarStartIndex, selectedOption);
 
 	Display_updateScreen();
 
@@ -475,6 +481,7 @@ displayState Display_displayChargingProfiles()
 
 	if (selectPressed)
 	{
+		selectPressed = false;
 		if (selectingProfile)
 		{
 			int profileIndex = pageStartIndex + selectedOption;
@@ -489,7 +496,6 @@ displayState Display_displayChargingProfiles()
 		}
 		else if (selectingNextPage)
 		{
-			selectPressed = false;
 			if (numPages > 0)
 			{
 				currentPage++;
@@ -509,8 +515,8 @@ displayState Display_displayChargingProfiles()
 		}
 		else if (selectingAddProfile)
 		{
-			// TODO : return Add Profile page
-			selectPressed = false;
+			currentPage = 0;
+			return DISPLAY_STATE_ADD_CHARGING_PROFILE;
 		}
 		else if (selectingNav)
 		{
@@ -521,7 +527,182 @@ displayState Display_displayChargingProfiles()
 	return DISPLAY_STATE_CHARGING_PROFILES;
 }
 
-displayState Display_displayChargingInitialization()
+displayState Display_displayAddChargingProfile(void)
+{
+	static int selectedOption = 0;
+	static int selectedVoltage_V = 500;
+	static int selectedCurrent_A = 3;
+	static bool isEditing = false;
+
+	if (previousDisplayState != DISPLAY_STATE_ADD_CHARGING_PROFILE)
+	{
+		selectedOption = 0;
+		selectedVoltage_V = 500;
+		selectedCurrent_A = 3;
+		isEditing = false;
+	}
+	int numOptions = 4;
+
+	char voltageString[30];
+	char currentString[30];
+	sprintf(voltageString, "Voltage: %dV", selectedVoltage_V);
+	sprintf(currentString, "Current: %dA", selectedCurrent_A);
+
+	if (!isEditing)
+	{
+		Display_handleUpDownPress(&selectedOption, numOptions);
+	}
+
+	Display_clear();
+	Display_drawTitleBar("ADD PROFILE");
+
+	// Voltage row
+	if (selectedOption == 0)
+	{
+		ssd1306_FillRectangle(1, 13, 122, 24, White);
+		ssd1306_SetCursor(3, 15);
+		ssd1306_WriteString(voltageString, Font_6x8, Black);
+
+		if (isEditing)
+		{
+			ssd1306_SetCursor(96, 15);
+			ssd1306_WriteString("EDIT", Font_6x8, Black);
+		}
+	}
+	else
+	{
+		ssd1306_DrawRectangle(1, 13, 122, 24, White);
+		ssd1306_SetCursor(3, 15);
+		ssd1306_WriteString(voltageString, Font_6x8, White);
+	}
+
+	// Current row
+	if (selectedOption == 1)
+	{
+		ssd1306_FillRectangle(1, 26, 122, 37, White);
+		ssd1306_SetCursor(3, 28);
+		ssd1306_WriteString(currentString, Font_6x8, Black);
+
+		if (isEditing)
+		{
+			ssd1306_SetCursor(96, 28);
+			ssd1306_WriteString("EDIT", Font_6x8, Black);
+		}
+	}
+	else
+	{
+		ssd1306_DrawRectangle(1, 26, 122, 37, White);
+		ssd1306_SetCursor(3, 28);
+		ssd1306_WriteString(currentString, Font_6x8, White);
+	}
+
+	char *navBarOptions[] = {"Add", "Cancel"};
+	int navBarStartIndex = 2;
+	Display_drawNavBar(navBarOptions, 2, navBarStartIndex, selectedOption);
+
+	Display_updateScreen();
+
+	if (isEditing)
+	{
+		if (upPressed)
+		{
+			if (selectedOption == 0)
+			{
+				selectedVoltage_V += VOLTAGE_STEP_V;
+				if (selectedVoltage_V > ELCON_MAX_VOLTAGE_V)
+				{
+					selectedVoltage_V = ELCON_MAX_VOLTAGE_V;
+				}
+			}
+			else if (selectedOption == 1)
+			{
+				selectedCurrent_A += CURRENT_STEP_A;
+				if (selectedCurrent_A > ELCON_MAX_CURRENT_A)
+				{
+					selectedCurrent_A = ELCON_MAX_CURRENT_A;
+				}
+			}
+			upPressed = false;
+		}
+
+		if (downPressed)
+		{
+			if (selectedOption == 0)
+			{
+				selectedVoltage_V -= VOLTAGE_STEP_V;
+				if (selectedVoltage_V < ELCON_MIN_VOLTAGE_V)
+				{
+					selectedVoltage_V = ELCON_MIN_VOLTAGE_V;
+				}
+			}
+			else if (selectedOption == 1)
+			{
+				selectedCurrent_A -= CURRENT_STEP_A;
+				if (selectedCurrent_A < ELCON_MIN_CURRENT_A)
+				{
+					selectedCurrent_A = ELCON_MIN_CURRENT_A;
+				}
+			}
+			downPressed = false;
+		}
+
+		if (selectPressed)
+		{
+			isEditing = false;
+			selectPressed = false;
+		}
+	}
+
+	if (selectPressed)
+	{
+		selectPressed = false;
+		switch (selectedOption)
+		{
+		case 0:
+		case 1:
+			isEditing = true;
+			break;
+		case 2:
+			ChargingProfile_addProfile(selectedCurrent_A, selectedVoltage_V);
+			isEditing = false;
+			selectedOption = 0;
+			return DISPLAY_STATE_CHARGING_PROFILES;
+		case 3:
+			isEditing = false;
+			selectedOption = 0;
+			return DISPLAY_STATE_CHARGING_PROFILES;
+		}
+	}
+	return DISPLAY_STATE_ADD_CHARGING_PROFILE;
+}
+
+void Display_handleUpDownPress(int *selectedOption, int numberOfOptions)
+{
+	if (upPressed)
+	{
+		(*selectedOption)--;
+		upPressed = false;
+	}
+
+	if (downPressed)
+	{
+		(*selectedOption)++;
+		downPressed = false;
+	}
+
+	// wrap
+	if (*selectedOption < 0)
+	{
+		*selectedOption = numberOfOptions - 1;
+	}
+
+	if (*selectedOption >= numberOfOptions)
+	{
+		*selectedOption = 0;
+	}
+}
+
+displayState Display_displayChargingInitialization(void)
 {
 	Display_clear();
 
@@ -579,14 +760,19 @@ void Display_drawLongScrollBar(int currentView, int numberOfViews)
 	}
 }
 // TODO: This screen is pretty useless
-displayState Display_displayChargerStats()
+displayState Display_displayChargerStats(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_CHARGER_STATS)
+	{
+		selectedOption = 0;
+	}
 	char inletTempString[50];
 	char outletTempString[50];
 	int numberOfOptions = 1;
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	sprintf(inletTempString, "Inlet Tmp: N/A");
 	sprintf(outletTempString, "Outlet Tmp: N/A");
@@ -602,13 +788,13 @@ displayState Display_displayChargerStats()
 	char *navBarOptions[] = {"Nav"};
 	int numberOfNavBarOptions = 1;
 	int firstNavBarOptionIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfNavBarOptions, firstNavBarOptionIndex);
+	Display_drawNavBar(navBarOptions, numberOfNavBarOptions, firstNavBarOptionIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -618,20 +804,26 @@ displayState Display_displayChargerStats()
 	return DISPLAY_STATE_CHARGER_STATS;
 }
 
-displayState Display_displayBatteryStatsOne()
+displayState Display_displayBatteryStatsOne(void)
 {
+
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_BATTERY_STATS_ONE)
+	{
+		selectedOption = 0;
+	}
+
 	char temperatureStats[50];
 	char voltageStats[50];
 	char averageStats[50];
 	int numberOfOptions = 2;
 
-	sprintf(temperatureStats, "Tmp H/L:%.2f/%.2fC", currentBmsAndElconData.BMS_maxTemp,
-			currentBmsAndElconData.BMS_minTemp);
+	sprintf(temperatureStats, "Tmp H/L:%.2f/%.2fC", currentBmsAndElconData.BMS_maxTemp, currentBmsAndElconData.BMS_minTemp);
 	sprintf(voltageStats, "Vlt H/L:%.3f/%.3fV", currentBmsAndElconData.BMS_maxVolt, currentBmsAndElconData.BMS_minVolt);
 	sprintf(averageStats, "Avg V:%.3fV", currentBmsAndElconData.BMS_avgVolt);
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	Display_drawTitleBar("Battery 1");
 
@@ -647,13 +839,13 @@ displayState Display_displayBatteryStatsOne()
 	char *navBarOptions[] = {"Nav", "Battery 2"};
 	int firstNavBarOptionIndex = 0;
 
-	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -665,9 +857,13 @@ displayState Display_displayBatteryStatsOne()
 	return DISPLAY_STATE_BATTERY_STATS_ONE;
 }
 
-displayState Display_displayBatteryStatsTwo()
+displayState Display_displayBatteryStatsTwo(void)
 {
-
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_BATTERY_STATS_TWO)
+	{
+		selectedOption = 0;
+	}
 	char stateOfCharge[50];
 	char packVolt[50];
 	char packImbalance[50];
@@ -680,7 +876,7 @@ displayState Display_displayBatteryStatsTwo()
 	sprintf(packVolt, "Pack Volt: %.2fV", currentBmsAndElconData.BMS_sumOfCells);
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	Display_drawTitleBar("Battery 2");
 
@@ -695,13 +891,13 @@ displayState Display_displayBatteryStatsTwo()
 
 	char *navBarOptions[] = {"Nav", "Battery 1"};
 	int firstNavBarOptionIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_wrapSelectedOption(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -714,12 +910,17 @@ displayState Display_displayBatteryStatsTwo()
 }
 
 // TODO: Fix logic to display if its already balancing
-displayState Display_displayStartBalancing()
+displayState Display_displayStartBalancing(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_START_BALANCING)
+	{
+		selectedOption = 0;
+	}
 	int numberOfOptions = 2;
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	Display_drawTitleBar("Start Balancing");
 
@@ -728,13 +929,13 @@ displayState Display_displayStartBalancing()
 
 	char *navBarOptions[] = {"Nav", "Start Bal"};
 	int navBarStartIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfOptions, navBarStartIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, navBarStartIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -748,7 +949,7 @@ displayState Display_displayStartBalancing()
 	return DISPLAY_STATE_START_BALANCING;
 }
 
-displayState Display_displayBalancingInitialization()
+displayState Display_displayBalancingInitialization(void)
 {
 	Display_clear();
 	if (!Charger_isChargerSafe())
@@ -860,8 +1061,13 @@ void Display_drawErrorSymbol(int x, int y)
 
 // TODO: Title should only display Balancing if charger state is balancing, or it should show BAL symbol if auto
 // balancing in charger state
-displayState Display_displayInChargingStatsOne()
+displayState Display_displayInChargingStatsOne(void)
 {
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_IN_CHARGING_STATS_ONE)
+	{
+		selectedOption = 0;
+	}
 	if (currentChargerState != CHARGER_STATE_CHARGING && currentChargerState != CHARGER_STATE_BALANCING)
 	{
 		return DISPLAY_STATE_NAVIGATION;
@@ -880,7 +1086,7 @@ displayState Display_displayInChargingStatsOne()
 			currentBmsAndElconData.ELCON_outCurrent);
 
 	Display_clear();
-	Display_wrapSelectedOption(numberOfOptions);
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 
 	bool isBalancing = (currentChargerState == CHARGER_STATE_BALANCING);
 	// Writes title
@@ -908,12 +1114,12 @@ displayState Display_displayInChargingStatsOne()
 	char *navBarOptions[1] = {isBalancing ? "Balancing 2" : "Charging 2"};
 
 	int firstNavBarOptionIndex = 0;
-	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex);
+	Display_drawNavBar(navBarOptions, numberOfOptions, firstNavBarOptionIndex, selectedOption);
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		switch (selectedOption)
 		{
 		case 0:
@@ -923,9 +1129,13 @@ displayState Display_displayInChargingStatsOne()
 	return DISPLAY_STATE_IN_CHARGING_STATS_ONE;
 }
 
-displayState Display_displayErrors()
+displayState Display_displayErrors(void)
 {
-
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_ERRORS)
+	{
+		selectedOption = 0;
+	}
 	static const char *elconErrorMessages[5] = {"HW Fail", "Charger Overtemp", "Wrong Input Volt", "No Batt Volt",
 												"Comms Timeout"};
 
@@ -955,13 +1165,12 @@ displayState Display_displayErrors()
 	int numberOfErrors = currentErrorIndex;
 
 	int navBarStartIndex = numberOfErrors;
-	int navBarLastIndex = numberOfErrors + 1;
+	int navBarLastIndex = numberOfErrors;
 	int numberOfOptions = navBarLastIndex;
 
 	Display_clear();
-
 	Display_drawTitleBar("Errors");
-
+	Display_handleUpDownPress(&selectedOption, numberOfOptions);
 	int currentView = selectedOption / 3;
 
 	// if the nav bar is selected, ensures that the currentScreen is the last screen of profiles
@@ -1019,13 +1228,13 @@ displayState Display_displayErrors()
 
 	char *navBarOptions[] = {"Nav"};
 	int numberOfNavBarOptions = 1;
-	Display_drawNavBar(navBarOptions, numberOfNavBarOptions, navBarStartIndex);
+	Display_drawNavBar(navBarOptions, numberOfNavBarOptions, navBarStartIndex, selectedOption);
 
 	Display_updateScreen();
 
 	if (selectPressed)
 	{
-		Display_checkSelectedOptionBounds(numberOfOptions);
+		selectPressed = false;
 		if (selectedOption < navBarStartIndex && selectedOption >= 0)
 		{
 			return DISPLAY_STATE_ERRORS;

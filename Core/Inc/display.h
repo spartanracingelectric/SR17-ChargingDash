@@ -37,6 +37,8 @@
 #define PROFILE_BOX_TEXT_START_Y_PX (PROFILE_BOX_START_Y_PX + PROFILE_BOX_PADDING_Y_PX + 1)
 #define PROFILE_BOX_TEXT_START_X_PX (PROFILE_BOX_START_X_PX + PROFILE_BOX_PADDING_X_PX + 1)
 
+#define VOLTAGE_STEP_V 5
+#define CURRENT_STEP_A 1
 
 typedef struct
 {
@@ -50,6 +52,7 @@ typedef enum
 	DISPLAY_STATE_NAVIGATION,
 	DISPLAY_STATE_HOME,
 	DISPLAY_STATE_CHARGING_PROFILES,
+	DISPLAY_STATE_ADD_CHARGING_PROFILE,
 	DISPLAY_STATE_CHARGING_INITIALIZATION,
 	DISPLAY_STATE_START_BALANCING,
 	DISPLAY_STATE_BALANCING_INITIALIZATION,
@@ -80,16 +83,17 @@ displayState Display_displayBatteryStatsOne();
 displayState Display_displayBatteryStatsTwo();
 displayState Display_displayChargingInitialization();
 displayState Display_displayBalancingInitialization();
-void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNavBarOptionIndex);
+displayState Display_displayAddChargingProfile(void);
+void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNavBarOptionIndex, int selectedOption);
 void Display_drawTitleBar(char title[]);
 void Display_drawInChargingSymbol(int x, int y);
 void Display_drawErrorSymbol(int x, int y);
-void Display_checkSelectedOptionBounds(int numberOfOptions);
-void Display_wrapSelectedOption(int numberOfOptions);
 void Display_drawShortScrollBar(int currentView, int numberOfViews);
 void Display_drawLongScrollBar(int currentView, int numberOfViews);
 void Display_clear();
 void Display_forceI2CReset();
 void Display_updateScreen();
+void Display_handleUpDownPress(int *selectedOption, int numberOfOptions);
+
 
 #endif

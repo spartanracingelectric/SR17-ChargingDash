@@ -14,6 +14,8 @@
 #define ELCON_MAX_POWER_W 6600
 #define ELCON_MIN_VOLTAGE_V 350
 #define ELCON_MAX_VOLTAGE_V 680
+#define ELCON_MAX_CURRENT_A 14
+#define ELCON_MIN_CURRENT_A 0
 
 typedef enum
 {
