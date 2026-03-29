@@ -1,12 +1,20 @@
 // Written by Ayman Alamayri in Dec 2024
 #include "display.h"
 #include "charger.h"
+#include "charging_profile.h"
 #include "ssd1306.h"
 #include <stdio.h>
 
 profile allProfiles[] = {
-	{"P1", 3, 525},  {"P2", 4, 355},  {"P3", 20, 355}, {"P4", 3, 385},  {"P5", 15, 385},
-	{"P6", 20, 385}, {"P7", 10, 401}, {"P8", 20, 400}, {"P9", 10, 403},
+	{"P1", 3, 525},
+	{"P2", 4, 355},
+	{"P3", 20, 355},
+	{"P4", 3, 385},
+	{"P5", 15, 385},
+	{"P6", 20, 385},
+	{"P7", 10, 401},
+	{"P8", 20, 400},
+	{"P9", 10, 403},
 };
 
 int numberOfProfiles = 9;
@@ -398,107 +406,115 @@ displayState Display_displayInChargingStatsTwo()
 
 displayState Display_displayChargingProfiles()
 {
+	static int currentPage = 0;
 
-	// TODO: move calculation outside of this, don't want to run this everytime
-	profile profiles[numberOfProfiles];
+	int numAvailableProfiles = ChargingProfile_updateAvailableProfiles();
+	int numPages = (numAvailableProfiles + (PROFILE_BOXES_PER_SCREEN - 1)) / PROFILE_BOXES_PER_SCREEN;
 
-	int profileIndex = 0;
-	for (int i = 0; i < numberOfProfiles; i++)
+	if (currentPage >= numPages)
 	{
-		if (allProfiles[i].voltage * allProfiles[i].current <= (MAX_ALLOWED_PWR * 97 / 100) &&
-			allProfiles[i].voltage > currentBmsAndElconData.BMS_sumOfCells)
-		{
-			profiles[profileIndex] = allProfiles[i];
-			profileIndex++;
-		}
+		currentPage = 0;
 	}
-
-	int currentNumberOfProfiles = profileIndex;
-
-	int navStartIndex = currentNumberOfProfiles;
-	int navLastIndex = currentNumberOfProfiles;
 
 	Display_clear();
-	Display_drawTitleBar("Charging");
+	Display_drawTitleBar("Select Charging Profile");
 
-	int currentScreen = selectedOption / 3;
+	int profileBoxStartY = PROFILE_BOX_START_Y_PX;
+	int profileBoxEndY = PROFILE_BOX_START_Y_PX + PROFILE_BOX_HEIGHT_PX;
+	int profileBoxTextStartY = PROFILE_BOX_TEXT_START_Y_PX;
 
-	// if the nav bar is selected, ensures that the currentScreen is the last screen of profiles
-	if (selectedOption > currentNumberOfProfiles - 1)
-	{
-		currentScreen = (currentNumberOfProfiles - 1) / 3;
-	}
-	int startIndex = currentScreen * 3;
-	// ensures that the correct number of profiles are showed on the last screen
-	if (selectedOption > currentNumberOfProfiles - 1)
-	{
-		startIndex = (currentNumberOfProfiles - 1) / 3 * 3;
-	}
-	// going up from first profile will go to Start button
-	if (selectedOption < 0)
-	{
-		startIndex = 0;
-		selectedOption = navLastIndex;
-	}
-	// going down from start button will reset back to first profile being selected
-	if (selectedOption > navLastIndex)
-	{
-		startIndex = 0;
-		selectedOption = 0;
-	}
+	// Display up to three profiles per page
+	int numProfilesOnCurrentPage = 0;
+	int pageStartIndex = currentPage * PROFILE_BOXES_PER_SCREEN;
 
-	// initial y-positions used for calculating profile display boxes
-	int y1 = 15;
-	int y2 = 13;
-	int y3 = 24;
-
-	// displays up to three profiles per screen
-	for (int i = startIndex; i < startIndex + 3 && i < currentNumberOfProfiles; i++)
+	for (int boxIndex = 0; boxIndex < PROFILE_BOXES_PER_SCREEN; boxIndex++)
 	{
-		char profileString[50];
-		sprintf(profileString, "%s: %dA %dV", profiles[i].name, profiles[i].current, profiles[i].voltage);
-		ssd1306_SetCursor(3, y1);
+		int profileIndex = pageStartIndex + boxIndex;
 
-		if (selectedOption == i)
+		if (profileIndex >= numAvailableProfiles)
 		{
-			ssd1306_FillRectangle(1, y2, 122, y3, White);
+			break;
+		}
+
+		numProfilesOnCurrentPage++;
+
+		char profileString[50];
+		sprintf(profileString, "P%d: %dA %dV", profileIndex + 1, availableProfiles[profileIndex].currentCommand_A, availableProfiles[profileIndex].voltageCommand_V);
+		ssd1306_SetCursor(PROFILE_BOX_TEXT_START_X_PX, profileBoxTextStartY);
+
+		if (selectedOption == boxIndex)
+		{
+			ssd1306_FillRectangle(PROFILE_BOX_START_X_PX, profileBoxStartY, PROFILE_BOX_END_X_PX, profileBoxEndY, White);
 			ssd1306_WriteString(profileString, Font_6x8, Black);
 		}
 		else
 		{
-			ssd1306_DrawRectangle(1, y2, 122, y3, White);
+			ssd1306_DrawRectangle(PROFILE_BOX_START_X_PX, profileBoxStartY, PROFILE_BOX_END_X_PX, profileBoxEndY, White);
 			ssd1306_WriteString(profileString, Font_6x8, White);
 		}
 
-		y1 = y1 + 13;
-		y2 = y2 + 13;
-		y3 = y3 + 13;
+		profileBoxStartY += PROFILE_BOX_HEIGHT_PX + 2;
+		profileBoxEndY += PROFILE_BOX_HEIGHT_PX + 2;
+		profileBoxTextStartY += PROFILE_BOX_HEIGHT_PX + 2;
 	}
 
-	// numOfProiles + 2 ensures it will always round up
-	int numberOfScreens = (numberOfProfiles + 2) / 3;
+	int navBarStartIndex = numProfilesOnCurrentPage;
+	int numNavBarOptions = 3;
+	int numOptions = numProfilesOnCurrentPage + numNavBarOptions;
+	Display_wrapSelectedOption(numOptions); // TODO: Maybe call this before drawing profile boxes
 
-	Display_drawShortScrollBar(currentScreen, numberOfScreens);
-
-	char *navBarOptions[] = {"Nav"};
-	int numberOfNavBarOptions = 1;
-	Display_drawNavBar(navBarOptions, numberOfNavBarOptions, navStartIndex);
+	char *navBarOptions[] = {"NEXT", "ADD", "MENU"};
+	Display_drawNavBar(navBarOptions, numNavBarOptions, navBarStartIndex);
 
 	Display_updateScreen();
 
+	bool selectingProfile = (selectedOption >= 0 && selectedOption < navBarStartIndex);
+	bool selectingNextPage = (selectedOption == navBarStartIndex);
+	bool selectingAddProfile = (selectedOption == navBarStartIndex + 1);
+	bool selectingNav = (selectedOption == navBarStartIndex + 2);
+
 	if (selectPressed)
 	{
-		// Make sure the selected option is within the valid range of profiles
-		if (selectedOption >= 0 && selectedOption < currentNumberOfProfiles)
+		if (selectingProfile)
 		{
-			profile selectedProfile = profiles[selectedOption];
-			// Set charging limits based on the selected profile
-			LIMIT_VOLTS = selectedProfile.voltage;
-			LIMIT_AMPS = selectedProfile.current;
-			return DISPLAY_STATE_CHARGING_INITIALIZATION;
+			int profileIndex = pageStartIndex + selectedOption;
+			if (profileIndex < numAvailableProfiles)
+			{
+				currentPage = 0;
+				// Set charging limits based on the selected profile
+				LIMIT_VOLTS = availableProfiles[profileIndex].voltageCommand_V;
+				LIMIT_AMPS = availableProfiles[profileIndex].currentCommand_A;
+				return DISPLAY_STATE_CHARGING_INITIALIZATION;
+			}
 		}
-		else if (selectedOption == currentNumberOfProfiles)
+		else if (selectingNextPage)
 		{
+			selectPressed = false;
+			if (numPages > 0)
+			{
+				currentPage++;
+				if (currentPage >= numPages)
+				{
+					currentPage = 0;
+				}
+			}
+
+			int newPageStartIndex = currentPage * PROFILE_BOXES_PER_SCREEN;
+			int newProfilesOnPage = numAvailableProfiles - newPageStartIndex;
+			if (newProfilesOnPage > PROFILE_BOXES_PER_SCREEN)
+			{
+				newProfilesOnPage = PROFILE_BOXES_PER_SCREEN;
+			}
+			selectedOption = newProfilesOnPage; // keep highlight on NEXT
+		}
+		else if (selectingAddProfile)
+		{
+			// TODO : return Add Profile page
+			selectPressed = false;
+		}
+		else if (selectingNav)
+		{
+			currentPage = 0;
 			return DISPLAY_STATE_NAVIGATION;
 		}
 	}
@@ -913,7 +929,7 @@ displayState Display_displayErrors()
 	static const char *elconErrorMessages[5] = {"HW Fail", "Charger Overtemp", "Wrong Input Volt", "No Batt Volt",
 												"Comms Timeout"};
 
-	static const char *bmsErrorMessages[8] = {"Cell Overvolt", "Cell Undervolt", "Open Wire",       "PEC Error",
+	static const char *bmsErrorMessages[8] = {"Cell Overvolt", "Cell Undervolt", "Open Wire", "PEC Error",
 											  "Cell Overtemp", "Cell Undertemp", "Redun Volt Diff", "Redun Temp Diff"};
 
 	char currentErrors[11][100];
