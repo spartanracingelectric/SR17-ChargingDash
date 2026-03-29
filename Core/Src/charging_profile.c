@@ -1,18 +1,21 @@
 #include "charging_profile.h"
+#include "charger.h"
 #include "eeprom.h"
 #include "stm32f1xx_hal_crc.h"
 #include "stm32f1xx_hal_def.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 
 ChargingProfile defaultProfiles[MAX_DEFAULT_PROFILES] = {
-	{.maxPower_W = 6500, .voltageCommand_V = 580}, {.maxPower_W = 6000, .voltageCommand_V = 560},
-	{.maxPower_W = 5000, .voltageCommand_V = 540}, {.maxPower_W = 4000, .voltageCommand_V = 520},
-	{.maxPower_W = 3000, .voltageCommand_V = 500},
+	{.currentCommand_A = 3, .voltageCommand_V = 525},    {.currentCommand_A = 8, .voltageCommand_V = 550},
+	{.currentCommand_A = 5, .voltageCommand_V = 570}, {.currentCommand_A = 10, .voltageCommand_V = 580},
+	{.currentCommand_A = 3, .voltageCommand_V = 500},
 };
 
 ChargingProfile storedProfiles[MAX_STORED_PROFILES] = {0};
+ChargingProfile availableProfiles[MAX_DEFAULT_PROFILES + MAX_STORED_PROFILES] = {0};
 
 HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void)
 {
@@ -39,10 +42,10 @@ HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void)
 			continue;
 		}
 
-		uint16_t maxPower_W = (uint16_t)rxBuffer[0] | ((uint16_t)rxBuffer[1] << 8);
+		uint16_t currentCommand_A = (uint16_t)rxBuffer[0] | ((uint16_t)rxBuffer[1] << 8);
 		uint16_t voltageCommand_V = (uint16_t)rxBuffer[2] | ((uint16_t)rxBuffer[3] << 8);
 
-		storedProfiles[i].maxPower_W = maxPower_W;
+		storedProfiles[i].currentCommand_A = currentCommand_A;
 		storedProfiles[i].voltageCommand_V = voltageCommand_V;
 	}
 
@@ -57,13 +60,13 @@ HAL_StatusTypeDef ChargingProfile_storeProfile(uint16_t index, ChargingProfile *
 	uint8_t txBuffer[PROFILE_DATA_SIZE_BYTES] = {0};
 
 	// For deleting profiles, store 0x0000
-	if (profile->maxPower_W == 0 && profile->voltageCommand_V == 0)
+	if (profile->currentCommand_A == 0 && profile->voltageCommand_V == 0)
 	{
 		return EEPROM_writeData(address, txBuffer, PROFILE_DATA_SIZE_BYTES);
 	}
 
-	txBuffer[0] = (uint8_t)(profile->maxPower_W);
-	txBuffer[1] = (uint8_t)(profile->maxPower_W >> 8);
+	txBuffer[0] = (uint8_t)(profile->currentCommand_A);
+	txBuffer[1] = (uint8_t)(profile->currentCommand_A >> 8);
 
 	txBuffer[2] = (uint8_t)(profile->voltageCommand_V);
 	txBuffer[3] = (uint8_t)(profile->voltageCommand_V >> 8);
@@ -101,9 +104,9 @@ HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t maxPower_W, uint16_t volta
 	// Find empty profile
 	for (int i = 0; i < MAX_STORED_PROFILES; i++)
 	{
-		if (storedProfiles[i].maxPower_W == 0 && storedProfiles[i].voltageCommand_V == 0)
+		if (storedProfiles[i].currentCommand_A == 0 && storedProfiles[i].voltageCommand_V == 0)
 		{
-			storedProfiles[i].maxPower_W = maxPower_W;
+			storedProfiles[i].currentCommand_A = maxPower_W;
 			storedProfiles[i].voltageCommand_V = voltageComand_V;
 			return ChargingProfile_storeAllProfiles();
 		}
@@ -127,7 +130,7 @@ HAL_StatusTypeDef ChargingProfile_deleteProfile(uint16_t index)
 	}
 
 	// Last profile is now a duplicate and needs to be deleted
-	storedProfiles[MAX_STORED_PROFILES - 1].maxPower_W = 0;
+	storedProfiles[MAX_STORED_PROFILES - 1].currentCommand_A = 0;
 	storedProfiles[MAX_STORED_PROFILES - 1].voltageCommand_V = 0;
 
 	return ChargingProfile_storeAllProfiles();
@@ -145,4 +148,53 @@ HAL_StatusTypeDef ChargingProfile_deleteAllProfiles(void)
 		}
 	}
 	return status;
+}
+
+int ChargingProfile_updateAvailableProfiles(void)
+{
+	memset(availableProfiles, 0, sizeof(availableProfiles));
+
+	int availableProfileIndex = 0;
+
+	for (int i = 0; i < MAX_DEFAULT_PROFILES; i++)
+	{
+		if (ChargingProfile_isValid(&defaultProfiles[i]))
+		{
+			availableProfiles[availableProfileIndex++] = defaultProfiles[i];
+		}
+	}
+
+	for (int i = 0; i < MAX_STORED_PROFILES; i++)
+	{
+
+		if (ChargingProfile_isValid(&storedProfiles[i]))
+		{
+			availableProfiles[availableProfileIndex++] = storedProfiles[i];
+		}
+	}
+
+	int numAvailableProfiles = availableProfileIndex;
+	return numAvailableProfiles;
+}
+
+bool ChargingProfile_isValid(ChargingProfile *profile)
+{
+	uint32_t power_W = profile->currentCommand_A * profile->voltageCommand_V;
+
+	if (power_W > ELCON_MAX_POWER_W)
+	{
+		return false;
+	}
+
+	if (profile->voltageCommand_V < ELCON_MIN_VOLTAGE_V || profile->voltageCommand_V > ELCON_MAX_VOLTAGE_V)
+	{
+		return false;
+	}
+
+	if (profile->voltageCommand_V <= currentBmsAndElconData.BMS_sumOfCells)
+	{
+		return false;
+	}
+
+	return true;
 }
