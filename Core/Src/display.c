@@ -408,11 +408,12 @@ displayState Display_displayInChargingStatsTwo(void)
 displayState Display_displayChargingProfiles(void)
 {
 	static int selectedOption = 0;
+	static int currentPage = 0;
 	if (previousDisplayState != DISPLAY_STATE_CHARGING_PROFILES)
 	{
 		selectedOption = 0;
+		currentPage = 0;
 	}
-	static int currentPage = 0;
 
 	int numAvailableProfiles = ChargingProfile_updateAvailableProfiles();
 	int numPages = (numAvailableProfiles + (PROFILE_BOXES_PER_SCREEN - 1)) / PROFILE_BOXES_PER_SCREEN;
@@ -445,7 +446,7 @@ displayState Display_displayChargingProfiles(void)
 		numProfilesOnCurrentPage++;
 
 		char profileString[50];
-		sprintf(profileString, "P%d: %dA %dV", profileIndex + 1, availableProfiles[profileIndex].currentCommand_A, availableProfiles[profileIndex].voltageCommand_V);
+		sprintf(profileString, "P%d: %d V %d A", profileIndex + 1, availableProfiles[profileIndex].voltageCommand_V, availableProfiles[profileIndex].currentCommand_A);
 		ssd1306_SetCursor(PROFILE_BOX_TEXT_START_X_PX, profileBoxTextStartY);
 
 		if (selectedOption == boxIndex)
@@ -487,7 +488,6 @@ displayState Display_displayChargingProfiles(void)
 			int profileIndex = pageStartIndex + selectedOption;
 			if (profileIndex < numAvailableProfiles)
 			{
-				currentPage = 0;
 				// Set charging limits based on the selected profile
 				LIMIT_VOLTS = availableProfiles[profileIndex].voltageCommand_V;
 				LIMIT_AMPS = availableProfiles[profileIndex].currentCommand_A;
@@ -515,12 +515,10 @@ displayState Display_displayChargingProfiles(void)
 		}
 		else if (selectingAddProfile)
 		{
-			currentPage = 0;
 			return DISPLAY_STATE_ADD_CHARGING_PROFILE;
 		}
 		else if (selectingNav)
 		{
-			currentPage = 0;
 			return DISPLAY_STATE_NAVIGATION;
 		}
 	}

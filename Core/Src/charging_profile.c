@@ -36,11 +36,12 @@ HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void)
 			return status;
 		}
 
-		uint32_t storedCRCValue = ((uint32_t)rxBuffer[4] << 0) | ((uint32_t)rxBuffer[5] << 8) |
-								  ((uint32_t)rxBuffer[6] << 16) | ((uint32_t)rxBuffer[7] << 24);
+		uint32_t storedCRCValue = ((uint32_t)rxBuffer[4] << 0) | ((uint32_t)rxBuffer[5] << 8) | ((uint32_t)rxBuffer[6] << 16) | ((uint32_t)rxBuffer[7] << 24);
 		uint32_t expectedCRCValue = HAL_CRC_Calculate(&hcrc, (uint32_t *)rxBuffer, PROFILE_SIZE_BYTES / 4);
 		if (storedCRCValue != expectedCRCValue)
 		{
+			storedProfiles[i].currentCommand_A = 0;
+			storedProfiles[i].voltageCommand_V = 0;
 			continue;
 		}
 
@@ -99,7 +100,7 @@ HAL_StatusTypeDef ChargingProfile_storeAllProfiles(void)
 	return status;
 }
 
-HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t maxPower_W, uint16_t voltageComand_V)
+HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t currentCommand_A, uint16_t voltageComand_V)
 {
 	ChargingProfile_getStoredProfiles();
 
@@ -108,7 +109,7 @@ HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t maxPower_W, uint16_t volta
 	{
 		if (storedProfiles[i].currentCommand_A == 0 && storedProfiles[i].voltageCommand_V == 0)
 		{
-			storedProfiles[i].currentCommand_A = maxPower_W;
+			storedProfiles[i].currentCommand_A = currentCommand_A;
 			storedProfiles[i].voltageCommand_V = voltageComand_V;
 			return ChargingProfile_storeAllProfiles();
 		}

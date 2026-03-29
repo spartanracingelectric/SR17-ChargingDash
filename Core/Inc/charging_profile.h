@@ -29,7 +29,7 @@ HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void);
 HAL_StatusTypeDef ChargingProfile_storeProfile(uint16_t index, ChargingProfile *profile);
 HAL_StatusTypeDef ChargingProfile_storeAllProfiles(void);
 HAL_StatusTypeDef ChargingProfile_deleteProfile(uint16_t index);
-HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t maxPower_W, uint16_t voltageComand_V);
+HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t currentCommand_A, uint16_t voltageComand_V);
 HAL_StatusTypeDef ChargingProfile_deleteAllProfiles(void);
 bool ChargingProfile_isValid(ChargingProfile *profile);
 int ChargingProfile_updateAvailableProfiles(void);

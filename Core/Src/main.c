@@ -199,6 +199,9 @@ int main(void)
 	therm_inlet = &adc_buffer[0];
 	therm_outlet = &adc_buffer[1];
 
+	// ChargingProfile_deleteAllProfiles();
+	ChargingProfile_getStoredProfiles();
+
 	//Cooling_commandFanSpeed(50);
 	// TODO: better init for GUI
 	// TEMP STUFF 1 END
