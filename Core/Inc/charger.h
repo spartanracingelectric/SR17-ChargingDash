@@ -5,8 +5,8 @@
 #include "main.h"
 #include <stdbool.h>
 
-#define UPPER_MAX_CELL_CV_THRESH 4.25 // Competition is 4.25
-#define LOWER_MAX_CELL_CV_THRESH 4.1  // Competition is 4.1
+#define UPPER_MAX_CELL_CV_THRESH 4.2 
+#define LOWER_MAX_CELL_CV_THRESH 4.1  
 #define MIN_ALLOWED_IMBAL 0.01
 #define MAINT_AMPS 0.5
 #define HYSTERESIS_VOLTS 0.01

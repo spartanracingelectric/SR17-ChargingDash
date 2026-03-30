@@ -9,7 +9,7 @@
 #include <sys/types.h>
 
 ChargingProfile defaultProfiles[MAX_DEFAULT_PROFILES] = {
-	{.currentCommand_A = 3, .voltageCommand_V = 525, .isDeletable = false},
+	{.currentCommand_A = 14, .voltageCommand_V = 550, .isDeletable = false},
 	{.currentCommand_A = 8, .voltageCommand_V = 550, .isDeletable = false},
 	{.currentCommand_A = 5, .voltageCommand_V = 570, .isDeletable = false},
 	{.currentCommand_A = 10, .voltageCommand_V = 580, .isDeletable = false},
@@ -208,12 +208,12 @@ int ChargingProfile_updateAvailableProfiles(void)
 
 bool ChargingProfile_isValid(ChargingProfile *profile)
 {
-	uint32_t power_W = (uint32_t)profile->currentCommand_A * (uint32_t)profile->voltageCommand_V;
-
-	if (power_W > ELCON_MAX_POWER_W)
-	{
-		return false;
-	}
+	// uint32_t power_W = (uint32_t)profile->currentCommand_A * (uint32_t)profile->voltageCommand_V;
+	//
+	// if (power_W > ELCON_MAX_POWER_W)
+	// {
+	// 	return false;
+	// }
 
 	if (profile->voltageCommand_V < ELCON_MIN_VOLTAGE_V || profile->voltageCommand_V > ELCON_MAX_VOLTAGE_V)
 	{
