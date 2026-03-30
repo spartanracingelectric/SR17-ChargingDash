@@ -208,7 +208,7 @@ int ChargingProfile_updateAvailableProfiles(void)
 
 bool ChargingProfile_isValid(ChargingProfile *profile)
 {
-	uint32_t power_W = profile->currentCommand_A * profile->voltageCommand_V;
+	uint32_t power_W = (uint32_t)profile->currentCommand_A * (uint32_t)profile->voltageCommand_V;
 
 	if (power_W > ELCON_MAX_POWER_W)
 	{

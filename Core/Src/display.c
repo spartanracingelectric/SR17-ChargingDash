@@ -451,7 +451,7 @@ displayState Display_displayChargingProfiles(void)
 		numProfilesOnCurrentPage++;
 
 		char profileString[50];
-		sprintf(profileString, "P%d: %d V %d A", profileIndex + 1, availableProfiles[profileIndex].voltageCommand_V, availableProfiles[profileIndex].currentCommand_A);
+		sprintf(profileString, "P%d: %dV %dA", profileIndex + 1, availableProfiles[profileIndex].voltageCommand_V, availableProfiles[profileIndex].currentCommand_A);
 		ssd1306_SetCursor(PROFILE_BOX_TEXT_START_X_PX, profileBoxTextStartY);
 
 		if (selectedOption == boxIndex)
@@ -549,6 +549,9 @@ displayState Display_displayAddChargingProfile(void)
 	sprintf(voltageString, "Voltage: %dV", selectedVoltage_V);
 	sprintf(currentString, "Current: %dA", selectedCurrent_A);
 
+	uint32_t selectedPower_W = (uint32_t)selectedVoltage_V * (uint32_t)selectedCurrent_A;
+	bool isOverMaxPower = (selectedPower_W > ELCON_MAX_POWER_W);
+
 	if (!isEditing)
 	{
 		Display_handleUpDownPress(&selectedOption, numOptions);
@@ -595,6 +598,12 @@ displayState Display_displayAddChargingProfile(void)
 		ssd1306_DrawRectangle(1, 26, 122, 37, White);
 		ssd1306_SetCursor(3, 28);
 		ssd1306_WriteString(currentString, Font_6x8, White);
+	}
+
+	if (isOverMaxPower)
+	{
+		ssd1306_SetCursor(3, 41);
+		ssd1306_WriteString("OVER 6.6kW LIMIT", Font_6x8, White);
 	}
 
 	char *navBarOptions[] = {"Add", "Cancel"};
@@ -664,10 +673,15 @@ displayState Display_displayAddChargingProfile(void)
 			isEditing = true;
 			break;
 		case 2:
-			ChargingProfile_addProfile(selectedCurrent_A, selectedVoltage_V);
-			isEditing = false;
-			selectedOption = 0;
-			return DISPLAY_STATE_CHARGING_PROFILES;
+			if (!isOverMaxPower)
+			{
+
+				ChargingProfile_addProfile(selectedCurrent_A, selectedVoltage_V);
+				isEditing = false;
+				selectedOption = 0;
+				return DISPLAY_STATE_CHARGING_PROFILES;
+			}
+			break;
 		case 3:
 			isEditing = false;
 			selectedOption = 0;
