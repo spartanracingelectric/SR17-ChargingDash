@@ -53,6 +53,7 @@ typedef enum
 	DISPLAY_STATE_HOME,
 	DISPLAY_STATE_CHARGING_PROFILES,
 	DISPLAY_STATE_ADD_CHARGING_PROFILE,
+	DISPLAY_STATE_CHARGING_CONFIRMATION,
 	DISPLAY_STATE_CHARGING_INITIALIZATION,
 	DISPLAY_STATE_START_BALANCING,
 	DISPLAY_STATE_BALANCING_INITIALIZATION,
@@ -67,32 +68,33 @@ typedef enum
 extern displayState nextDisplayState;
 extern displayState currentDisplayState;
 
-void DISP_KanoaSplash();
+void DISP_KanoaSplash(void);
 
-void Display_init();
-displayState Display_updateState();
-displayState Display_displayNavigation();
-displayState Display_displayHome();
-displayState Display_displayErrors();
-displayState Display_displayStartBalancing();
-displayState Display_displayInChargingStatsOne();
-displayState Display_displayInChargingStatsTwo();
-displayState Display_displayChargingProfiles();
-displayState Display_displayChargerStats();
-displayState Display_displayBatteryStatsOne();
-displayState Display_displayBatteryStatsTwo();
-displayState Display_displayChargingInitialization();
-displayState Display_displayBalancingInitialization();
+void Display_init(void);
+displayState Display_updateState(void);
+displayState Display_displayNavigation(void);
+displayState Display_displayHome(void);
+displayState Display_displayErrors(void);
+displayState Display_displayStartBalancing(void);
+displayState Display_displayInChargingStatsOne(void);
+displayState Display_displayInChargingStatsTwo(void);
+displayState Display_displayChargingProfiles(void);
+displayState Display_displayChargerStats(void);
+displayState Display_displayBatteryStatsOne(void);
+displayState Display_displayBatteryStatsTwo(void);
+displayState Display_displayChargingInitialization(void);
+displayState Display_displayBalancingInitialization(void);
 displayState Display_displayAddChargingProfile(void);
+displayState Display_displayChargingConfirmation(void);
 void Display_drawNavBar(char *options[], int numberOfNavBarOptions, int firstNavBarOptionIndex, int selectedOption);
 void Display_drawTitleBar(char title[]);
 void Display_drawInChargingSymbol(int x, int y);
 void Display_drawErrorSymbol(int x, int y);
 void Display_drawShortScrollBar(int currentView, int numberOfViews);
 void Display_drawLongScrollBar(int currentView, int numberOfViews);
-void Display_clear();
-void Display_forceI2CReset();
-void Display_updateScreen();
+void Display_clear(void);
+void Display_forceI2CReset(void);
+void Display_updateScreen(void);
 void Display_handleUpDownPress(int *selectedOption, int numberOfOptions);
 
 

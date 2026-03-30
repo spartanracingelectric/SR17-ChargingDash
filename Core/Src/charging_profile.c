@@ -9,11 +9,11 @@
 #include <sys/types.h>
 
 ChargingProfile defaultProfiles[MAX_DEFAULT_PROFILES] = {
-	{.currentCommand_A = 3, .voltageCommand_V = 525},
-	{.currentCommand_A = 8, .voltageCommand_V = 550},
-	{.currentCommand_A = 5, .voltageCommand_V = 570},
-	{.currentCommand_A = 10, .voltageCommand_V = 580},
-	{.currentCommand_A = 3, .voltageCommand_V = 500},
+	{.currentCommand_A = 3, .voltageCommand_V = 525, .isDeletable = false},
+	{.currentCommand_A = 8, .voltageCommand_V = 550, .isDeletable = false},
+	{.currentCommand_A = 5, .voltageCommand_V = 570, .isDeletable = false},
+	{.currentCommand_A = 10, .voltageCommand_V = 580, .isDeletable = false},
+	{.currentCommand_A = 3, .voltageCommand_V = 500, .isDeletable = false},
 };
 
 ChargingProfile storedProfiles[MAX_STORED_PROFILES] = {0};
@@ -42,6 +42,7 @@ HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void)
 		{
 			storedProfiles[i].currentCommand_A = 0;
 			storedProfiles[i].voltageCommand_V = 0;
+			storedProfiles[i].isDeletable = true;
 			continue;
 		}
 
@@ -50,6 +51,7 @@ HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void)
 
 		storedProfiles[i].currentCommand_A = currentCommand_A;
 		storedProfiles[i].voltageCommand_V = voltageCommand_V;
+		storedProfiles[i].isDeletable = true;
 	}
 
 	return status;
@@ -119,7 +121,7 @@ HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t currentCommand_A, uint16_t
 	return HAL_ERROR;
 }
 
-HAL_StatusTypeDef ChargingProfile_deleteProfile(uint16_t index)
+HAL_StatusTypeDef ChargingProfile_deleteProfileByIndex(uint16_t index)
 {
 	if (index >= MAX_STORED_PROFILES)
 	{
@@ -139,12 +141,36 @@ HAL_StatusTypeDef ChargingProfile_deleteProfile(uint16_t index)
 	return ChargingProfile_storeAllProfiles();
 }
 
+HAL_StatusTypeDef ChargingProfile_deleteProfileByValue(uint16_t currentCommand_A, uint16_t voltageCommand_V)
+{
+	for (uint16_t i = 0; i < MAX_STORED_PROFILES; i++)
+	{
+		if (storedProfiles[i].currentCommand_A == currentCommand_A &&
+			storedProfiles[i].voltageCommand_V == voltageCommand_V)
+		{
+			for (uint16_t j = i; j + 1 < MAX_STORED_PROFILES; j++)
+			{
+				// Shift all profiles
+				storedProfiles[j] = storedProfiles[j + 1];
+			}
+			
+			// Last profile should be empty after shifting
+			storedProfiles[MAX_STORED_PROFILES - 1].currentCommand_A = 0;
+			storedProfiles[MAX_STORED_PROFILES - 1].voltageCommand_V = 0;
+
+			return ChargingProfile_storeAllProfiles();
+		}
+	}
+
+	return HAL_ERROR;
+}
+
 HAL_StatusTypeDef ChargingProfile_deleteAllProfiles(void)
 {
 	HAL_StatusTypeDef status;
 	for (int i = 0; i < MAX_STORED_PROFILES; i++)
 	{
-		status = ChargingProfile_deleteProfile(i);
+		status = ChargingProfile_deleteProfileByIndex(i);
 		if (status != HAL_OK)
 		{
 			return status;

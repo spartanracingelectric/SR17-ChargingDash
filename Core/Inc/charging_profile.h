@@ -17,6 +17,7 @@ typedef struct
 {
 	uint16_t currentCommand_A;
 	uint16_t voltageCommand_V;
+	bool isDeletable;
 } ChargingProfile;
 
 extern ChargingProfile defaultProfiles[MAX_DEFAULT_PROFILES];
@@ -28,9 +29,10 @@ extern CRC_HandleTypeDef hcrc;
 HAL_StatusTypeDef ChargingProfile_getStoredProfiles(void);
 HAL_StatusTypeDef ChargingProfile_storeProfile(uint16_t index, ChargingProfile *profile);
 HAL_StatusTypeDef ChargingProfile_storeAllProfiles(void);
-HAL_StatusTypeDef ChargingProfile_deleteProfile(uint16_t index);
-HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t currentCommand_A, uint16_t voltageComand_V);
+HAL_StatusTypeDef ChargingProfile_deleteProfileByIndex(uint16_t index);
+HAL_StatusTypeDef ChargingProfile_deleteProfileByValue(uint16_t currentCommand_A, uint16_t voltageCommand_V);
 HAL_StatusTypeDef ChargingProfile_deleteAllProfiles(void);
+HAL_StatusTypeDef ChargingProfile_addProfile(uint16_t currentCommand_A, uint16_t voltageComand_V);
 bool ChargingProfile_isValid(ChargingProfile *profile);
 int ChargingProfile_updateAvailableProfiles(void);
 

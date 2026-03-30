@@ -1,9 +1,9 @@
-// Written by Ayman Alamayri in Dec 2024
 #include "display.h"
 #include "charger.h"
 #include "charging_profile.h"
 #include "ssd1306.h"
 #include <stdio.h>
+#include <sys/select.h>
 
 profile allProfiles[] = {
 	{"P1", 3, 525},
@@ -22,6 +22,8 @@ int numberOfProfiles = 9;
 displayState currentDisplayState = DISPLAY_STATE_NAVIGATION;
 displayState nextDisplayState = DISPLAY_STATE_NAVIGATION;
 displayState previousDisplayState = DISPLAY_STATE_NAVIGATION;
+
+ChargingProfile selectedChargingProfile = {0};
 
 extern char codeBranch[10];
 extern char codeVersion[5];
@@ -113,6 +115,9 @@ displayState Display_updateState(void)
 		break;
 	case DISPLAY_STATE_ADD_CHARGING_PROFILE:
 		nextDisplayState = Display_displayAddChargingProfile();
+		break;
+	case DISPLAY_STATE_CHARGING_CONFIRMATION:
+		nextDisplayState = Display_displayChargingConfirmation();
 		break;
 	case DISPLAY_STATE_CHARGING_INITIALIZATION:
 		nextDisplayState = Display_displayChargingInitialization();
@@ -488,10 +493,8 @@ displayState Display_displayChargingProfiles(void)
 			int profileIndex = pageStartIndex + selectedOption;
 			if (profileIndex < numAvailableProfiles)
 			{
-				// Set charging limits based on the selected profile
-				LIMIT_VOLTS = availableProfiles[profileIndex].voltageCommand_V;
-				LIMIT_AMPS = availableProfiles[profileIndex].currentCommand_A;
-				return DISPLAY_STATE_CHARGING_INITIALIZATION;
+				selectedChargingProfile = availableProfiles[profileIndex];
+				return DISPLAY_STATE_CHARGING_CONFIRMATION;
 			}
 		}
 		else if (selectingNextPage)
@@ -672,6 +675,80 @@ displayState Display_displayAddChargingProfile(void)
 		}
 	}
 	return DISPLAY_STATE_ADD_CHARGING_PROFILE;
+}
+
+displayState Display_displayChargingConfirmation(void)
+{
+	static int selectedOption = 0;
+	if (previousDisplayState != DISPLAY_STATE_CHARGING_CONFIRMATION)
+	{
+		selectedOption = 0;
+	}
+	// Only display delete for non-default profiles
+	char *navBarOptions[3] = {"START", selectedChargingProfile.isDeletable ? "DELETE" : "BACK", selectedChargingProfile.isDeletable ? "BACK" : ""};
+	int numOptions = selectedChargingProfile.isDeletable ? 3 : 2;
+	Display_handleUpDownPress(&selectedOption, numOptions);
+
+	Display_clear();
+	Display_drawTitleBar("SELECTED PROFILE");
+
+	char voltageString[30];
+	char currentString[30];
+	sprintf(voltageString, "Voltage: %dV", selectedChargingProfile.voltageCommand_V);
+	sprintf(currentString, "Current: %dA", selectedChargingProfile.currentCommand_A);
+
+	ssd1306_DrawRectangle(1, 13, 122, 24, White);
+	ssd1306_SetCursor(3, 15);
+	ssd1306_WriteString(voltageString, Font_6x8, White);
+
+	ssd1306_DrawRectangle(1, 26, 122, 37, White);
+	ssd1306_SetCursor(3, 28);
+	ssd1306_WriteString(currentString, Font_6x8, White);
+
+	int navBarStartIndex = 0;
+	Display_drawNavBar(navBarOptions, numOptions, navBarStartIndex, selectedOption);
+	Display_updateScreen();
+
+	if (selectPressed)
+	{
+		selectPressed = false;
+		if (selectedOption == 0)
+		{
+			LIMIT_VOLTS = selectedChargingProfile.voltageCommand_V;
+			LIMIT_AMPS = selectedChargingProfile.currentCommand_A;
+			return DISPLAY_STATE_CHARGING_INITIALIZATION;
+		}
+		else if (selectedChargingProfile.isDeletable)
+		{
+			if (selectedOption == 1)
+			{
+				ChargingProfile_deleteProfileByValue(selectedChargingProfile.currentCommand_A, selectedChargingProfile.voltageCommand_V);
+				selectedChargingProfile.voltageCommand_V = 0;
+				selectedChargingProfile.currentCommand_A = 0;
+				selectedChargingProfile.isDeletable = false;
+				return DISPLAY_STATE_CHARGING_PROFILES;
+			}
+
+			if (selectedOption == 2)
+			{
+				selectedChargingProfile.voltageCommand_V = 0;
+				selectedChargingProfile.currentCommand_A = 0;
+				selectedChargingProfile.isDeletable = false;
+				return DISPLAY_STATE_CHARGING_PROFILES;
+			}
+		}
+		else
+		{
+			if (selectedOption == 1)
+			{
+				selectedChargingProfile.voltageCommand_V = 0;
+				selectedChargingProfile.currentCommand_A = 0;
+				selectedChargingProfile.isDeletable = false;
+				return DISPLAY_STATE_CHARGING_PROFILES;
+			}
+		}
+	}
+	return DISPLAY_STATE_CHARGING_CONFIRMATION;
 }
 
 void Display_handleUpDownPress(int *selectedOption, int numberOfOptions)
