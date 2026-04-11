@@ -18,9 +18,9 @@ void Charger_updateChargingMode()
 		return;
 	}
 
-	if (currentBmsAndElconData.BMS_maxVolt >= UPPER_MAX_CELL_CV_THRESH)
+	if (currentBmsAndElconData.BMS_maxCellVoltage_mV >= UPPER_MAX_CELL_CV_THRESH_MV)
 	{
-		if (currentBmsAndElconData.BMS_packImbalance >= MIN_ALLOWED_IMBAL)
+		if (currentBmsAndElconData.BMS_packImbalance_mV >= MIN_ALLOWED_IMBAL_MV)
 		{
 			currentChargingMode = CHARGING_MODE_BALANCING;
 			return;
@@ -32,13 +32,13 @@ void Charger_updateChargingMode()
 		}
 	}
 
-	if (currentBmsAndElconData.BMS_maxVolt >= LOWER_MAX_CELL_CV_THRESH)
+	if (currentBmsAndElconData.BMS_maxCellVoltage_mV >= LOWER_MAX_CELL_CV_THRESH_MV)
 	{
 		currentChargingMode = CHARGING_MODE_CURRENT_TAPER;
 		return;
 	}
 
-	if (currentBmsAndElconData.BMS_maxVolt < LOWER_MAX_CELL_CV_THRESH)
+	if (currentBmsAndElconData.BMS_maxCellVoltage_mV < LOWER_MAX_CELL_CV_THRESH_MV)
 	{
 		currentChargingMode = CHARGING_MODE_CONSTANT_CURRENT;
 		return;
@@ -89,15 +89,14 @@ void Charger_handleCharging(CANMessage *charging_msg, CANMessage *balancing_msg)
 		}
 		else if (currentChargingMode == CHARGING_MODE_MAINTENANCE)
 		{
-			CAN_Charge(charging_msg, currentBmsAndElconData.BMS_sumOfCells, MAINT_AMPS, true);
+			float voltage = (float)currentBmsAndElconData.BMS_sumPackVoltage_cV / 100.0f;
+			CAN_Charge(charging_msg, voltage, MAINT_AMPS, true);
 			CAN_Balance(balancing_msg, false);
 			HAL_GPIO_WritePin(GPIOA, LED_BAL_Pin, GPIO_PIN_RESET);
 		}
 		else if (currentChargingMode == CHARGING_MODE_CURRENT_TAPER)
 		{
-			float current =
-				LIMIT_AMPS + ((MAINT_AMPS - LIMIT_AMPS) / (UPPER_MAX_CELL_CV_THRESH - LOWER_MAX_CELL_CV_THRESH) *
-							  (currentBmsAndElconData.BMS_maxVolt - LOWER_MAX_CELL_CV_THRESH));
+			float current = LIMIT_AMPS + ((MAINT_AMPS - LIMIT_AMPS) / (UPPER_MAX_CELL_CV_THRESH_MV - LOWER_MAX_CELL_CV_THRESH_MV) * (currentBmsAndElconData.BMS_maxCellVoltage_mV - LOWER_MAX_CELL_CV_THRESH_MV));
 			CAN_Charge(charging_msg, LIMIT_VOLTS, current, true);
 			CAN_Balance(balancing_msg, false);
 			HAL_GPIO_WritePin(GPIOA, LED_BAL_Pin, GPIO_PIN_RESET);
@@ -244,16 +243,16 @@ bool Charger_checkFaultStatus()
 
 void Charger_printBmsAndElconData(const volatile bmsAndElconData *d)
 {
-	printf("BMS_avgVolt       = %f V\n", d->BMS_avgVolt);
-	printf("BMS_sumOfCells    = %fV\n", d->BMS_sumOfCells);
-	printf("BMS_minVolt       = %f V\n", d->BMS_minVolt);
-	printf("BMS_maxVolt       = %f V\n", d->BMS_maxVolt);
-	printf("BMS_minTemp       = %f °C\n", d->BMS_minTemp);
-	printf("BMS_maxTemp       = %f °C\n", d->BMS_maxTemp);
-	printf("BMS_stateOfCharge = %f %%\n", d->BMS_stateOfCharge);
-	printf("BMS_packImbalance = %f V\n", d->BMS_packImbalance);
-	printf("ELCON_outVolt     = %f V\n", d->ELCON_outVolt);
-	printf("ELCON_outCurrent  = %f A\n", d->ELCON_outCurrent);
+	printf("BMS_avgVolt       = %d mV\n", d->BMS_averageCellVoltage_mV);
+	printf("BMS_sumOfCells    = %d cV\n", d->BMS_sumPackVoltage_cV);
+	printf("BMS_minVolt       = %d mV\n", d->BMS_minCellVoltage_mV);
+	printf("BMS_maxVolt       = %d mV\n", d->BMS_maxCellVoltage_mV);
+	printf("BMS_minTemp       = %d C\n", d->BMS_minTemp_C);
+	printf("BMS_maxTemp       = %d C\n", d->BMS_maxTemp_C);
+	printf("BMS_stateOfCharge = %d %%\n", d->BMS_stateOfCharge);
+	printf("BMS_packImbalance = %d mv\n", d->BMS_packImbalance_mV);
+	printf("ELCON_outVolt     = %d dV\n", d->ELCON_outputVoltage_dV);
+	printf("ELCON_outCurrent  = %d dV\n", d->ELCON_outputVoltage_dV);
 
 	// Fault bits: 0=hw fail, 1=overtemp, 2=input volt wrong, 3=batt volt not detected, 4=comms timeout
 	printf("ELCON_faults      = [");

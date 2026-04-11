@@ -169,8 +169,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 	if (RxHeader.IDE == CAN_ID_EXT && RxHeader.ExtId == ELCON_OUTPUT_CAN_ID)
 	{
-		currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
-		currentBmsAndElconData.ELCON_outCurrent = ((RxData[2] << 8) | RxData[3]) * 0.1;
+		currentBmsAndElconData.ELCON_outputVoltage_dV = ((RxData[0] << 8) | RxData[1]);
+		currentBmsAndElconData.ELCON_outputCurrent_dA = ((RxData[2] << 8) | RxData[3]);
 		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
 		currentBmsAndElconData.ELCON_fault[3] = RxData[4] & 0x08;
 		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
@@ -183,26 +183,37 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		if (RxHeader.StdId == BMS_PACK_SUMMARY_ONE_CAN_ID)
 		{
 			bmsFlags |= FLAG_PACK_SUMMARY_ONE;
-			int16_t rawMaxVolt = (int16_t)(((uint16_t)RxData[1] << 8) | RxData[0]);
-			int16_t rawMinVolt = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
-			int8_t rawMaxTemp = (int8_t)RxData[4];
-			int8_t rawMinTemp = (int8_t)RxData[5];
-			uint16_t rawPackVolt = (uint16_t)(((uint16_t)RxData[7] << 8) | RxData[6]);
 
-			currentBmsAndElconData.BMS_maxVolt = rawMaxVolt * 0.001f;
-			currentBmsAndElconData.BMS_minVolt = rawMinVolt * 0.001f;
-			currentBmsAndElconData.BMS_maxTemp = rawMaxTemp;
-			currentBmsAndElconData.BMS_minTemp = rawMinTemp;
-			currentBmsAndElconData.BMS_sumOfCells = rawPackVolt * 0.01f;
+			currentBmsAndElconData.BMS_maxCellVoltage_mV = (int16_t)(((uint16_t)RxData[1] << 8) | RxData[0]);
+			currentBmsAndElconData.BMS_minCellVoltage_mV = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
+			currentBmsAndElconData.BMS_maxTemp_C = (int8_t)RxData[4];
+			currentBmsAndElconData.BMS_minTemp_C = (int8_t)RxData[5];
+			currentBmsAndElconData.BMS_sumPackVoltage_cV = (uint16_t)(((uint16_t)RxData[7] << 8) | RxData[6]);
 		}
 		else if (RxHeader.StdId == BMS_PACK_SUMMARY_TWO_CAN_ID)
 		{
 			bmsFlags |= FLAG_PACK_SUMMARY_TWO;
-			uint16_t rawImbalance_mV = ((uint16_t)RxData[1] << 8) | RxData[0];
-			int16_t rawAvgCellVoltage_mV = (int16_t)(((uint16_t)RxData[5] << 8) | RxData[4]);
 
-			currentBmsAndElconData.BMS_packImbalance = rawImbalance_mV;
-			currentBmsAndElconData.BMS_avgVolt = rawAvgCellVoltage_mV;
+			uint16_t statusBits = ((uint16_t)RxData[1] << 8) | RxData[0];
+
+			currentBmsAndElconData.BMS_fault[0] = (statusBits & (1 << 0)) ? 1 : 0;   // Cell Overvolt Fault
+			currentBmsAndElconData.BMS_fault[1] = (statusBits & (1 << 1)) ? 1 : 0;   // Cell Undervolt Fault
+			currentBmsAndElconData.BMS_fault[2] = (statusBits & (1 << 2)) ? 1 : 0;   // Cell High Temp Fault
+			currentBmsAndElconData.BMS_fault[3] = (statusBits & (1 << 3)) ? 1 : 0;   // Cell Low Temp Fault
+			currentBmsAndElconData.BMS_fault[4] = (statusBits & (1 << 4)) ? 1 : 0;   // Redundant Voltage Fault
+			currentBmsAndElconData.BMS_fault[5] = (statusBits & (1 << 5)) ? 1 : 0;   // Redundant Temp Fault
+			currentBmsAndElconData.BMS_fault[6] = (statusBits & (1 << 6)) ? 1 : 0;   // Invalid Data Fault
+			currentBmsAndElconData.BMS_fault[7] = (statusBits & (1 << 7)) ? 1 : 0;   // Open Wire Detection Fault
+			
+			currentBmsAndElconData.BMS_warning[0] = (statusBits & (1 << 8)) ? 1 : 0;   // Cell Overvolt Warning
+			currentBmsAndElconData.BMS_warning[1] = (statusBits & (1 << 9)) ? 1 : 0;   // Cell Undervolt Warning
+			currentBmsAndElconData.BMS_warning[2] = (statusBits & (1 << 10)) ? 1 : 0;  // Cell High Temp Warning
+			currentBmsAndElconData.BMS_warning[3] = (statusBits & (1 << 11)) ? 1 : 0;  // Cell Low Temp Warning
+			currentBmsAndElconData.BMS_warning[4] = (statusBits & (1 << 12)) ? 1 : 0;  // Cell Imbalance Warning
+			
+			currentBmsAndElconData.BMS_packImbalance_mV = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
+			currentBmsAndElconData.BMS_hvSensePackVoltage_cV = ((uint16_t)RxData[5] << 8) | RxData[4];
+			currentBmsAndElconData.BMS_stateOfCharge = ((uint16_t)RxData[7] << 8) | RxData[6];
 		}
 		else if (RxHeader.StdId == BMS_STATE_OF_CHARGE_CAN_ID)
 		{

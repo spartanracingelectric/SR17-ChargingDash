@@ -5,9 +5,9 @@
 #include "main.h"
 #include <stdbool.h>
 
-#define UPPER_MAX_CELL_CV_THRESH 4.2 
-#define LOWER_MAX_CELL_CV_THRESH 4.1  
-#define MIN_ALLOWED_IMBAL 0.01
+#define UPPER_MAX_CELL_CV_THRESH_MV 4200
+#define LOWER_MAX_CELL_CV_THRESH_MV 4100 
+#define MIN_ALLOWED_IMBAL_MV 50 // TODO: CHECK
 #define MAINT_AMPS 0.5
 #define HYSTERESIS_VOLTS 0.01
 
@@ -35,27 +35,21 @@ typedef enum
 // TODO: Separate BMS and Elcon into different structs
 typedef struct
 {
-	float BMS_avgVolt;
-	float BMS_sumOfCells;
-	float BMS_minVolt;
-	float BMS_maxVolt;
-	float BMS_avgTemp;
-	float BMS_minTemp;
-	float BMS_maxTemp;
-	float BMS_stateOfCharge; // TODO: not float
-	float BMS_packImbalance;
-	float BMS_balanceStatus;
+	int16_t BMS_averageCellVoltage_mV;
+	int16_t BMS_sumPackVoltage_cV;
+	int16_t BMS_hvSensePackVoltage_cV;
+	int16_t BMS_minCellVoltage_mV;
+	int16_t BMS_maxCellVoltage_mV;
+	int8_t BMS_averageTemp_C;
+	int8_t BMS_minTemp_C;
+	int8_t BMS_maxTemp_C;
+	int16_t BMS_stateOfCharge; 
+	int16_t BMS_packImbalance_mV;
+	bool BMS_balanceStatus;
 	bool BMS_fault[8];
-	/*
-	  Bit 0: Cell High Temp Fault
-	  Bit 1: Cell Volt Imbalance Fault
-	  Bit 2: Cell Low Volt Fault
-	  Bit 3: Cell High Volt Fault
-	  Bit 4: Pack Low Volt Fault
-	  Bit 5: Pack High Volt Fault
-	*/
-	float ELCON_outVolt;
-	float ELCON_outCurrent;
+	bool BMS_warning[5];
+	int16_t ELCON_outputVoltage_dV;
+	int16_t ELCON_outputCurrent_dA;
 	bool ELCON_fault[5];
 	/*
 	Bit 0: 0 -> no hw fail, 1 -> hw fail

@@ -220,7 +220,7 @@ bool ChargingProfile_isValid(ChargingProfile *profile)
 		return false;
 	}
 
-	if (profile->voltageCommand_V <= currentBmsAndElconData.BMS_sumOfCells)
+	if (profile->voltageCommand_V <= (currentBmsAndElconData.BMS_sumPackVoltage_cV / 100))
 	{
 		return false;
 	}

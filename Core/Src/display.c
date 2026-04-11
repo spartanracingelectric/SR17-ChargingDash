@@ -3,6 +3,7 @@
 #include "charging_profile.h"
 #include "ssd1306.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/select.h>
 
 profile allProfiles[] = {
@@ -253,21 +254,9 @@ void Display_updateScreen()
 {
 	ssd1306_UpdateScreen();
 	HAL_StatusTypeDef status = ssd1306_Custom_GetLastStatus();
-	if (status == HAL_OK)
+	if (status != HAL_OK)
 	{
-		// printf("HAL_OK\n");
-	}
-	else if (status == HAL_ERROR)
-	{
-		// printf("HAL_ERROR\n");
-	}
-	else if (status == HAL_BUSY)
-	{
-		// printf("HAL_BUSY\n");
-	}
-	else if (status == HAL_TIMEOUT)
-	{
-		// printf("HAL_TIMEOUT\n");
+		Display_forceI2CReset();
 	}
 }
 
@@ -368,10 +357,10 @@ displayState Display_displayInChargingStatsTwo(void)
 	char averageStats[50];
 	char chargingInfo[50];
 
-	sprintf(averageStats, "Avg V:%.3fV", currentBmsAndElconData.BMS_avgVolt);
-	sprintf(chargingInfo, "%.2f V @ %.2f A", LIMIT_VOLTS, LIMIT_AMPS);
-	sprintf(stateOfCharge, "SOC:%.2f%%", currentBmsAndElconData.BMS_stateOfCharge);
-	sprintf(sumOfCells, "Pack Volt: %.2fV", currentBmsAndElconData.BMS_sumOfCells);
+	sprintf(averageStats, "Avg V:%d.%03dV", currentBmsAndElconData.BMS_averageCellVoltage_mV / 1000, currentBmsAndElconData.BMS_averageCellVoltage_mV % 1000);
+	sprintf(chargingInfo, "%df V @ %d A", LIMIT_VOLTS, LIMIT_AMPS); // TODO: CHECK, using float with %d
+	sprintf(stateOfCharge, "SOC:%d.%02d%%", currentBmsAndElconData.BMS_stateOfCharge / 100, currentBmsAndElconData.BMS_stateOfCharge % 100);
+	sprintf(sumOfCells, "Pack Volt: %d.%02dV", currentBmsAndElconData.BMS_sumPackVoltage_cV / 100, currentBmsAndElconData.BMS_sumPackVoltage_cV % 100);
 
 	Display_clear();
 	Display_handleUpDownPress(&selectedOption, numberOfOptions);
@@ -893,9 +882,9 @@ displayState Display_displayBatteryStatsOne(void)
 	char averageStats[50];
 	int numberOfOptions = 2;
 
-	sprintf(temperatureStats, "Tmp H/L:%.2f/%.2fC", currentBmsAndElconData.BMS_maxTemp, currentBmsAndElconData.BMS_minTemp);
-	sprintf(voltageStats, "Vlt H/L:%.3f/%.3fV", currentBmsAndElconData.BMS_maxVolt, currentBmsAndElconData.BMS_minVolt);
-	sprintf(averageStats, "Avg V:%.3fV", currentBmsAndElconData.BMS_avgVolt);
+	sprintf(temperatureStats, "Tmp H/L:%d/%dC", currentBmsAndElconData.BMS_maxTemp_C, currentBmsAndElconData.BMS_minTemp_C);
+	sprintf(voltageStats, "Vlt H/L:%d.%03d/%d.%03dV", currentBmsAndElconData.BMS_maxCellVoltage_mV / 1000, abs(currentBmsAndElconData.BMS_maxCellVoltage_mV % 1000), currentBmsAndElconData.BMS_minCellVoltage_mV / 1000, abs(currentBmsAndElconData.BMS_minCellVoltage_mV % 1000));
+	sprintf(averageStats, "Avg V:%d.%03dV", currentBmsAndElconData.BMS_averageCellVoltage_mV / 1000, abs(currentBmsAndElconData.BMS_averageCellVoltage_mV % 1000));
 
 	Display_clear();
 	Display_handleUpDownPress(&selectedOption, numberOfOptions);
@@ -944,11 +933,9 @@ displayState Display_displayBatteryStatsTwo(void)
 	char packImbalance[50];
 	int numberOfOptions = 2;
 
-	sprintf(stateOfCharge, "SOC:%.2f%%", currentBmsAndElconData.BMS_stateOfCharge);
-
-	sprintf(packImbalance, "Imbalance:%.2fV", currentBmsAndElconData.BMS_packImbalance);
-
-	sprintf(packVolt, "Pack Volt: %.2fV", currentBmsAndElconData.BMS_sumOfCells);
+	sprintf(stateOfCharge, "SOC:%d.%02d%%", currentBmsAndElconData.BMS_stateOfCharge / 100, abs(currentBmsAndElconData.BMS_stateOfCharge % 100));
+	sprintf(packImbalance, "Imbalance:%d.%03dV", currentBmsAndElconData.BMS_packImbalance_mV / 1000, abs(currentBmsAndElconData.BMS_packImbalance_mV % 1000));
+	sprintf(packVolt, "Pack Volt:%d.%02dV", currentBmsAndElconData.BMS_sumPackVoltage_cV / 100, abs(currentBmsAndElconData.BMS_sumPackVoltage_cV % 100));
 
 	Display_clear();
 	Display_handleUpDownPress(&selectedOption, numberOfOptions);
@@ -1153,12 +1140,22 @@ displayState Display_displayInChargingStatsOne(void)
 	char imbalance[30];
 	char outputStats[50];
 
-	sprintf(temperatureStats, "Tmp H/L:%.2f/%.2fC", currentBmsAndElconData.BMS_maxTemp,
-			currentBmsAndElconData.BMS_minTemp);
-	sprintf(voltageStats, "Vlt H/L:%.3f/%.3fV", currentBmsAndElconData.BMS_maxVolt, currentBmsAndElconData.BMS_minVolt);
-	sprintf(imbalance, "Imbal:%.3fV", currentBmsAndElconData.BMS_packImbalance);
-	sprintf(outputStats, "Out V/C:%.2fV/%.2fA", currentBmsAndElconData.ELCON_outVolt,
-			currentBmsAndElconData.ELCON_outCurrent);
+	sprintf(voltageStats, "Vlt H/L:%d.%03d/%d.%03dV",
+			currentBmsAndElconData.BMS_maxCellVoltage_mV / 1000,
+			abs(currentBmsAndElconData.BMS_maxCellVoltage_mV % 1000),
+			currentBmsAndElconData.BMS_minCellVoltage_mV / 1000,
+			abs(currentBmsAndElconData.BMS_minCellVoltage_mV % 1000));
+
+	sprintf(imbalance, "Imbal:%d.%03dV",
+			currentBmsAndElconData.BMS_packImbalance_mV / 1000,
+			abs(currentBmsAndElconData.BMS_packImbalance_mV % 1000));
+
+	sprintf(outputStats, "Out V/C:%d.%01dV/%d.%01dA",
+			currentBmsAndElconData.ELCON_outputVoltage_dV / 10,
+			abs(currentBmsAndElconData.ELCON_outputVoltage_dV % 10),
+
+			currentBmsAndElconData.ELCON_outputCurrent_dA / 10,
+			abs(currentBmsAndElconData.ELCON_outputCurrent_dA % 10));
 
 	Display_clear();
 	Display_handleUpDownPress(&selectedOption, numberOfOptions);
