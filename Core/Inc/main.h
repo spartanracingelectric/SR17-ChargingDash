@@ -117,7 +117,14 @@ void Error_Handler(void);
 #define HEARTBEAT_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define DEBUG_ENABLED 0
 
+#if DEBUG_ENABLED
+#include <stdio.h>
+#define DEBUG_PRINT(...) printf(__VA_ARGS__)   // defined as printf when enabled
+#else
+#define DEBUG_PRINT(...) do {} while(0)        // defined as empty statement when disabled
+#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

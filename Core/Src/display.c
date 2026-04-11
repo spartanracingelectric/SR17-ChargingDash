@@ -49,22 +49,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if (GPIO_Pin == BTN_UP_Pin)
 			{
 				upPressed = true;
-				printf("BUTTON 1\n");
+				DEBUG_PRINT("BUTTON 1\n");
 			}
 			else if (GPIO_Pin == BTN_DWN_Pin)
 			{
 				downPressed = true;
-				printf("BUTTON 2\n");
+				DEBUG_PRINT("BUTTON 2\n");
 			}
 			else if (GPIO_Pin == BTN_SEL_Pin)
 			{
 				selectPressed = true;
-				printf("BUTTON 3\n");
+				DEBUG_PRINT("BUTTON 3\n");
 			}
 			else if (GPIO_Pin == BTN_BCK_Pin)
 			{
 				backPressed = true;
-				printf("BUTTON 4\n");
+				DEBUG_PRINT("BUTTON 4\n");
 			}
 			buttonInterruptPreviousTime = buttonInterruptCurrentTime;
 		}
@@ -228,7 +228,7 @@ displayState Display_displayNavigation(void)
 
 void Display_forceI2CReset()
 {
-	printf("Forcing I2C reset...\n");
+	DEBUG_PRINT("Forcing I2C reset...\n");
 
 	// Abort any ongoing operations
 	HAL_I2C_Master_Abort_IT(&hi2c2, SSD1306_I2C_ADDR);
@@ -247,7 +247,7 @@ void Display_forceI2CReset()
 	// Reinitialize display
 	ssd1306_Init();
 
-	printf("I2C reset complete\n");
+	DEBUG_PRINT("I2C reset complete\n");
 }
 
 void Display_updateScreen()

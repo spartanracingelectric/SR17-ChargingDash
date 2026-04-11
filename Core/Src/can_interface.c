@@ -1,6 +1,5 @@
 #include "can_interface.h"
 #include "charger.h"
-#include <stdio.h>
 
 static uint8_t bmsFlags = 0;
 
@@ -26,7 +25,7 @@ HAL_StatusTypeDef CAN_Send(CANMessage *m)
     uint32_t previousTime = HAL_GetTick();
 
     while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0) {
-    	// printf("waiting\n");
+    	// DEBUG_PRINT("waiting\n");
     	if(HAL_GetTick() - previousTime > CAN_TIME_OUT_THRESHOLD_MS){
     		return HAL_TIMEOUT;
     	}
@@ -36,9 +35,9 @@ HAL_StatusTypeDef CAN_Send(CANMessage *m)
 
     if (status != HAL_OK)
     {
-        printf("CAN SEND FAILED: %d\n", status);
-        printf("TX free level: %lu\n", HAL_CAN_GetTxMailboxesFreeLevel(&hcan1));
-        printf("CAN error code: 0x%08lX\n", HAL_CAN_GetError(&hcan1));
+        DEBUG_PRINT("CAN SEND FAILED: %d\n", status);
+        DEBUG_PRINT("TX free level: %lu\n", HAL_CAN_GetTxMailboxesFreeLevel(&hcan1));
+        DEBUG_PRINT("CAN error code: 0x%08lX\n", HAL_CAN_GetError(&hcan1));
     }
 
     return status;
@@ -268,7 +267,7 @@ void CAN_Charge(CANMessage *ptr, float chargingLimitsVoltsFloat, float chargingL
 	chargingLimitsAmpsFloat *= 10;
 	uint16_t chargingLimitsVolts = (uint16_t)chargingLimitsVoltsFloat;
 	uint16_t chargingLimitsAmps = (uint16_t)chargingLimitsAmpsFloat;
-	printf("CHARGING LIMIT VOLTS: %d, CHARGING LIMIT AMPS: %d\n", chargingLimitsVolts, chargingLimitsAmps);
+	DEBUG_PRINT("CHARGING LIMIT VOLTS: %d, CHARGING LIMIT AMPS: %d\n", chargingLimitsVolts, chargingLimitsAmps);
 
 	ptr->data[0] = (chargingLimitsVolts >> 8) & 0xFF;
 	ptr->data[1] = chargingLimitsVolts & 0xFF;

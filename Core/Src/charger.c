@@ -1,6 +1,5 @@
 #include "charger.h"
 #include "display.h"
-#include <stdio.h>
 
 float LIMIT_VOLTS = 0;
 float LIMIT_AMPS = 0;
@@ -140,13 +139,13 @@ void Charger_printPinStates()
 	GPIO_PinState IN_HVIL_FSW_STATE = HAL_GPIO_ReadPin(IN_HVIL_FSW_GPIO_Port, IN_HVIL_FSW_Pin);
 	GPIO_PinState RTC_SW_STATE = HAL_GPIO_ReadPin(IN_RTC_SW_GPIO_Port, IN_RTC_SW_Pin);
 	GPIO_PinState PLUG_CONNECTION_STATE = HAL_GPIO_ReadPin(GPIOC, PP_SIGNAL_Pin);
-	printf("Charger Pin States\n");
-	printf("IN_HVIL_ESTOP: %s\n", IN_HVIL_ESTOP_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
-	printf("IN_HVIL_TERM : %s\n", IN_HVIL_TERM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
-	printf("IN_HVIL_ACUM : %s\n", IN_HVIL_ACUM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
-	printf("IN_HVIL_FSW  : %s\n", IN_HVIL_FSW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
-	printf("RTC_SW       : %s\n", RTC_SW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
-	printf("PLUG STATE   : %s\n", PLUG_CONNECTION_STATE == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("Charger Pin States\n");
+	DEBUG_PRINT("IN_HVIL_ESTOP: %s\n", IN_HVIL_ESTOP_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("IN_HVIL_TERM : %s\n", IN_HVIL_TERM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("IN_HVIL_ACUM : %s\n", IN_HVIL_ACUM_Pin_State == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("IN_HVIL_FSW  : %s\n", IN_HVIL_FSW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("RTC_SW       : %s\n", RTC_SW_STATE == GPIO_PIN_SET ? "SET" : "RESET");
+	DEBUG_PRINT("PLUG STATE   : %s\n", PLUG_CONNECTION_STATE == GPIO_PIN_SET ? "SET" : "RESET");
 }
 
 // TODO: Check these conditions
@@ -243,26 +242,26 @@ bool Charger_checkFaultStatus()
 
 void Charger_printBmsAndElconData(const volatile bmsAndElconData *d)
 {
-	printf("BMS_avgVolt       = %d mV\n", d->BMS_averageCellVoltage_mV);
-	printf("BMS_sumOfCells    = %d cV\n", d->BMS_sumPackVoltage_cV);
-	printf("BMS_minVolt       = %d mV\n", d->BMS_minCellVoltage_mV);
-	printf("BMS_maxVolt       = %d mV\n", d->BMS_maxCellVoltage_mV);
-	printf("BMS_minTemp       = %d C\n", d->BMS_minTemp_C);
-	printf("BMS_maxTemp       = %d C\n", d->BMS_maxTemp_C);
-	printf("BMS_stateOfCharge = %d %%\n", d->BMS_stateOfCharge);
-	printf("BMS_packImbalance = %d mv\n", d->BMS_packImbalance_mV);
-	printf("ELCON_outVolt     = %d dV\n", d->ELCON_outputVoltage_dV);
-	printf("ELCON_outCurrent  = %d dV\n", d->ELCON_outputVoltage_dV);
+	DEBUG_PRINT("BMS_avgVolt       = %d mV\n", d->BMS_averageCellVoltage_mV);
+	DEBUG_PRINT("BMS_sumOfCells    = %d cV\n", d->BMS_sumPackVoltage_cV);
+	DEBUG_PRINT("BMS_minVolt       = %d mV\n", d->BMS_minCellVoltage_mV);
+	DEBUG_PRINT("BMS_maxVolt       = %d mV\n", d->BMS_maxCellVoltage_mV);
+	DEBUG_PRINT("BMS_minTemp       = %d C\n", d->BMS_minTemp_C);
+	DEBUG_PRINT("BMS_maxTemp       = %d C\n", d->BMS_maxTemp_C);
+	DEBUG_PRINT("BMS_stateOfCharge = %d %%\n", d->BMS_stateOfCharge);
+	DEBUG_PRINT("BMS_packImbalance = %d mv\n", d->BMS_packImbalance_mV);
+	DEBUG_PRINT("ELCON_outVolt     = %d dV\n", d->ELCON_outputVoltage_dV);
+	DEBUG_PRINT("ELCON_outCurrent  = %d dV\n", d->ELCON_outputVoltage_dV);
 
 	// Fault bits: 0=hw fail, 1=overtemp, 2=input volt wrong, 3=batt volt not detected, 4=comms timeout
-	printf("ELCON_faults      = [");
+	DEBUG_PRINT("ELCON_faults      = [");
 	for (int i = 0; i < 5; ++i)
 	{
-		printf("%s", d->ELCON_fault[i] ? "1" : "0");
+		DEBUG_PRINT("%s", d->ELCON_fault[i] ? "1" : "0");
 		if (i < 4)
-			printf(", ");
+			DEBUG_PRINT(", ");
 	}
-	printf("]\n");
+	DEBUG_PRINT("]\n");
 }
 
 

@@ -4,7 +4,6 @@
 #include "stm32f1xx_hal_crc.h"
 #include "stm32f1xx_hal_def.h"
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 

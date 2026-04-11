@@ -24,8 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
-
 #include "can_interface.h"
 #include "cooling.h"
 #include "charger.h"
@@ -222,10 +220,10 @@ int main(void)
 		// Charger_printBmsAndElconData(&currentBmsAndElconData);
 		//Charger_printPinStates();
 		Display_updateState();
-		// printf("OUTLET MAX AMPS: %f\n", J1772_getMaxCurrent());
-		// printf("OUTLET PLUG DETECTED: %d\n", J1772_isPlugConnected());
+		// DEBUG_PRINT("OUTLET MAX AMPS: %f\n", J1772_getMaxCurrent());
+		// DEBUG_PRINT("OUTLET PLUG DETECTED: %d\n", J1772_isPlugConnected());
 		Charger_handleCharging(&charging_msg, &balancing_msg);
-		// printf("test");
+		// DEBUG_PRINT("test");
 		HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);
 		/* USER CODE END WHILE */
 
