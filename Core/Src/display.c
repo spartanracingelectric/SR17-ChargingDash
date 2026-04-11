@@ -29,13 +29,13 @@ ChargingProfile selectedChargingProfile = {0};
 extern char codeBranch[10];
 extern char codeVersion[5];
 
-uint32_t buttonInterruptCurrentTime = 0;
-uint32_t buttonInterruptPreviousTime = 0;
+volatile uint32_t buttonInterruptCurrentTime = 0;
+volatile uint32_t buttonInterruptPreviousTime = 0;
 
-bool upPressed = false;
-bool downPressed = false;
-bool selectPressed = false;
-bool backPressed = false;
+volatile bool upPressed = false;
+volatile bool downPressed = false;
+volatile bool selectPressed = false;
+volatile bool backPressed = false;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == BTN_UP_Pin || GPIO_Pin == BTN_DWN_Pin || GPIO_Pin == BTN_SEL_Pin || GPIO_Pin == BTN_BCK_Pin)

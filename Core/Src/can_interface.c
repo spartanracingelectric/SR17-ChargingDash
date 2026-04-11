@@ -1,10 +1,10 @@
 #include "can_interface.h"
 #include "charger.h"
 
-static uint8_t bmsFlags = 0;
+static volatile uint8_t bmsFlags = 0;
 
-int bms_can_current_time = 0;
-int bms_can_previous_time = 0;
+volatile int bms_can_current_time = 0;
+volatile int bms_can_previous_time = 0;
 int bms_can_debounce_ms = 1000;
 
 CAN_RxHeaderTypeDef RxHeader;

@@ -117,7 +117,7 @@ void Error_Handler(void);
 #define HEARTBEAT_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define DEBUG_ENABLED 0
+#define DEBUG_ENABLED 1
 
 #if DEBUG_ENABLED
 #include <stdio.h>

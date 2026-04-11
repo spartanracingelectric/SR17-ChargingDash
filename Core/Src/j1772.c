@@ -4,7 +4,7 @@
 #include "stm32f1xx_hal_tim.h"
 #include <stdbool.h>
 
-float dutyCycle;
+volatile float dutyCycle;
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
