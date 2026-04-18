@@ -221,6 +221,7 @@ int main(void)
 		Display_updateState();
 		// printf("OUTLET MAX AMPS: %f\n", J1772_getMaxCurrent());
 		// printf("OUTLET PLUG DETECTED: %d\n", J1772_isPlugConnected());
+		printf("TEST\n");
 		Charger_handleCharging(&charging_msg, &balancing_msg);
 		// printf("test");
 		HAL_GPIO_TogglePin(HEARTBEAT_LED_GPIO_Port, HEARTBEAT_LED_Pin);

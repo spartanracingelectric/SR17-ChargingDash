@@ -171,6 +171,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	{
 		currentBmsAndElconData.ELCON_outVolt = ((RxData[0] << 8) | RxData[1]) * 0.1;
 		currentBmsAndElconData.ELCON_outCurrent = ((RxData[2] << 8) | RxData[3]) * 0.1;
+		printf("ELCON OUT VOLT: %f, ELCON OUT CURRENT: %f\n", currentBmsAndElconData.ELCON_outVolt, currentBmsAndElconData.ELCON_outCurrent);
 		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
 		currentBmsAndElconData.ELCON_fault[3] = RxData[4] & 0x08;
 		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
