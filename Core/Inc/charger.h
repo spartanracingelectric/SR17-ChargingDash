@@ -36,10 +36,10 @@ typedef enum
 typedef struct
 {
 	int16_t BMS_averageCellVoltage_mV;
-	int16_t BMS_sumPackVoltage_cV;
-	int16_t BMS_hvSensePackVoltage_cV;
-	int16_t BMS_minCellVoltage_mV;
-	int16_t BMS_maxCellVoltage_mV;
+	uint16_t BMS_sumPackVoltage_cV;
+	uint16_t BMS_hvSensePackVoltage_cV;
+	uint16_t BMS_minCellVoltage_mV;
+	uint16_t BMS_maxCellVoltage_mV;
 	int8_t BMS_averageTemp_C;
 	int8_t BMS_minTemp_C;
 	int8_t BMS_maxTemp_C;
@@ -48,8 +48,8 @@ typedef struct
 	bool BMS_balanceStatus;
 	bool BMS_fault[8];
 	bool BMS_warning[5];
-	int16_t ELCON_outputVoltage_dV;
-	int16_t ELCON_outputCurrent_dA;
+	uint16_t ELCON_outputVoltage_dV;
+	uint16_t ELCON_outputCurrent_dA;
 	bool ELCON_fault[5];
 	/*
 	Bit 0: 0 -> no hw fail, 1 -> hw fail

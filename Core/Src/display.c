@@ -358,7 +358,7 @@ displayState Display_displayInChargingStatsTwo(void)
 	char chargingInfo[50];
 
 	sprintf(averageStats, "Avg V:%d.%03dV", currentBmsAndElconData.BMS_averageCellVoltage_mV / 1000, currentBmsAndElconData.BMS_averageCellVoltage_mV % 1000);
-	sprintf(chargingInfo, "%df V @ %d A", LIMIT_VOLTS, LIMIT_AMPS); // TODO: CHECK, using float with %d
+	sprintf(chargingInfo, "%df V @ %d A", (int16_t)LIMIT_VOLTS, (int16_t)LIMIT_AMPS); // TODO: CHECK, using float with %d
 	sprintf(stateOfCharge, "SOC:%d.%02d%%", currentBmsAndElconData.BMS_stateOfCharge / 100, currentBmsAndElconData.BMS_stateOfCharge % 100);
 	sprintf(sumOfCells, "Pack Volt: %d.%02dV", currentBmsAndElconData.BMS_sumPackVoltage_cV / 100, currentBmsAndElconData.BMS_sumPackVoltage_cV % 100);
 
@@ -1164,22 +1164,19 @@ displayState Display_displayInChargingStatsOne(void)
 	// Writes title
 	Display_drawTitleBar(isBalancing ? "Balancing 1" : "Charging 1");
 
-	// Writes temp
-	ssd1306_SetCursor(1, 13);
-	ssd1306_WriteString(temperatureStats, Font_6x8, White);
-
 	// Writes voltage
-	ssd1306_SetCursor(1, 23);
+	ssd1306_SetCursor(1, 13);
 	ssd1306_WriteString(voltageStats, Font_6x8, White);
 
 	// Writes imbalance
-	ssd1306_SetCursor(1, 33);
+	ssd1306_SetCursor(1, 23);
 	ssd1306_WriteString(imbalance, Font_6x8, White);
+
 
 	// Writes output info
 	if (!isBalancing)
 	{
-		ssd1306_SetCursor(1, 43);
+		ssd1306_SetCursor(1, 33);
 		ssd1306_WriteString(outputStats, Font_6x8, White);
 	}
 

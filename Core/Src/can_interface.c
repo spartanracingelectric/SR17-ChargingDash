@@ -170,6 +170,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	{
 		currentBmsAndElconData.ELCON_outputVoltage_dV = ((RxData[0] << 8) | RxData[1]);
 		currentBmsAndElconData.ELCON_outputCurrent_dA = ((RxData[2] << 8) | RxData[3]);
+		DEBUG_PRINT("ELCON OUT VOLT: %d, ELCON OUT CURRENT: %d\n", currentBmsAndElconData.ELCON_outputVoltage_dV, currentBmsAndElconData.ELCON_outputCurrent_dA);
 		currentBmsAndElconData.ELCON_fault[4] = RxData[4] & 0x10;
 		currentBmsAndElconData.ELCON_fault[3] = RxData[4] & 0x08;
 		currentBmsAndElconData.ELCON_fault[2] = RxData[4] & 0x04;
@@ -183,8 +184,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		{
 			bmsFlags |= FLAG_PACK_SUMMARY_ONE;
 
-			currentBmsAndElconData.BMS_maxCellVoltage_mV = (int16_t)(((uint16_t)RxData[1] << 8) | RxData[0]);
-			currentBmsAndElconData.BMS_minCellVoltage_mV = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
+			currentBmsAndElconData.BMS_maxCellVoltage_mV = (uint16_t)(((uint16_t)RxData[1] << 8) | RxData[0]) / 10;
+			currentBmsAndElconData.BMS_minCellVoltage_mV = (uint16_t)(((uint16_t)RxData[3] << 8) | RxData[2]) / 10;
 			currentBmsAndElconData.BMS_maxTemp_C = (int8_t)RxData[4];
 			currentBmsAndElconData.BMS_minTemp_C = (int8_t)RxData[5];
 			currentBmsAndElconData.BMS_sumPackVoltage_cV = (uint16_t)(((uint16_t)RxData[7] << 8) | RxData[6]);
