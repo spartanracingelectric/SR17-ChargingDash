@@ -1146,6 +1146,10 @@ displayState Display_displayInChargingStatsOne(void)
 			currentBmsAndElconData.BMS_minCellVoltage_mV / 1000,
 			abs(currentBmsAndElconData.BMS_minCellVoltage_mV % 1000));
 
+	sprintf(temperatureStats, "Tmp H/L:%d/%dC",
+			currentBmsAndElconData.BMS_maxTemp_C,
+			currentBmsAndElconData.BMS_minTemp_C);
+
 	sprintf(imbalance, "Imbal:%d.%03dV",
 			currentBmsAndElconData.BMS_packImbalance_mV / 1000,
 			abs(currentBmsAndElconData.BMS_packImbalance_mV % 1000));
@@ -1168,15 +1172,15 @@ displayState Display_displayInChargingStatsOne(void)
 	ssd1306_SetCursor(1, 13);
 	ssd1306_WriteString(voltageStats, Font_6x8, White);
 
-	// Writes imbalance
 	ssd1306_SetCursor(1, 23);
+	ssd1306_WriteString(temperatureStats, Font_6x8, White);
+
+	ssd1306_SetCursor(1, 33);
 	ssd1306_WriteString(imbalance, Font_6x8, White);
-
-
 	// Writes output info
 	if (!isBalancing)
 	{
-		ssd1306_SetCursor(1, 33);
+		ssd1306_SetCursor(1, 43);
 		ssd1306_WriteString(outputStats, Font_6x8, White);
 	}
 
