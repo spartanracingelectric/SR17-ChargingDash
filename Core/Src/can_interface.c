@@ -22,25 +22,27 @@ HAL_StatusTypeDef CAN_Activate(void)
 
 HAL_StatusTypeDef CAN_Send(CANMessage *m)
 {
-    uint32_t previousTime = HAL_GetTick();
+	uint32_t previousTime = HAL_GetTick();
 
-    while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0) {
-    	// DEBUG_PRINT("waiting\n");
-    	if(HAL_GetTick() - previousTime > CAN_TIME_OUT_THRESHOLD_MS){
-    		return HAL_TIMEOUT;
-    	}
-    }
+	while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
+	{
+		// DEBUG_PRINT("waiting\n");
+		if (HAL_GetTick() - previousTime > CAN_TIME_OUT_THRESHOLD_MS)
+		{
+			return HAL_TIMEOUT;
+		}
+	}
 
 	HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&hcan1, &m->TxHeader, (uint8_t *)m->data, &m->TxMailbox);
 
-    if (status != HAL_OK)
-    {
-        DEBUG_PRINT("CAN SEND FAILED: %d\n", status);
-        DEBUG_PRINT("TX free level: %lu\n", HAL_CAN_GetTxMailboxesFreeLevel(&hcan1));
-        DEBUG_PRINT("CAN error code: 0x%08lX\n", HAL_CAN_GetError(&hcan1));
-    }
+	if (status != HAL_OK)
+	{
+		DEBUG_PRINT("CAN SEND FAILED: %d\n", status);
+		DEBUG_PRINT("TX free level: %lu\n", HAL_CAN_GetTxMailboxesFreeLevel(&hcan1));
+		DEBUG_PRINT("CAN error code: 0x%08lX\n", HAL_CAN_GetError(&hcan1));
+	}
 
-    return status;
+	return status;
 }
 
 void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_length)
@@ -196,29 +198,28 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 			uint16_t statusBits = ((uint16_t)RxData[1] << 8) | RxData[0];
 
-			currentBmsAndElconData.BMS_fault[0] = (statusBits & (1 << 0)) ? 1 : 0;   // Cell Overvolt Fault
-			currentBmsAndElconData.BMS_fault[1] = (statusBits & (1 << 1)) ? 1 : 0;   // Cell Undervolt Fault
-			currentBmsAndElconData.BMS_fault[2] = (statusBits & (1 << 2)) ? 1 : 0;   // Cell High Temp Fault
-			currentBmsAndElconData.BMS_fault[3] = (statusBits & (1 << 3)) ? 1 : 0;   // Cell Low Temp Fault
-			currentBmsAndElconData.BMS_fault[4] = (statusBits & (1 << 4)) ? 1 : 0;   // Redundant Voltage Fault
-			currentBmsAndElconData.BMS_fault[5] = (statusBits & (1 << 5)) ? 1 : 0;   // Redundant Temp Fault
-			currentBmsAndElconData.BMS_fault[6] = (statusBits & (1 << 6)) ? 1 : 0;   // Invalid Data Fault
-			currentBmsAndElconData.BMS_fault[7] = (statusBits & (1 << 7)) ? 1 : 0;   // Open Wire Detection Fault
-			
-			currentBmsAndElconData.BMS_warning[0] = (statusBits & (1 << 8)) ? 1 : 0;   // Cell Overvolt Warning
-			currentBmsAndElconData.BMS_warning[1] = (statusBits & (1 << 9)) ? 1 : 0;   // Cell Undervolt Warning
-			currentBmsAndElconData.BMS_warning[2] = (statusBits & (1 << 10)) ? 1 : 0;  // Cell High Temp Warning
-			currentBmsAndElconData.BMS_warning[3] = (statusBits & (1 << 11)) ? 1 : 0;  // Cell Low Temp Warning
-			currentBmsAndElconData.BMS_warning[4] = (statusBits & (1 << 12)) ? 1 : 0;  // Cell Imbalance Warning
-			
+			currentBmsAndElconData.BMS_fault[0] = (statusBits & (1 << 0)) ? 1 : 0; // Cell Overvolt Fault
+			currentBmsAndElconData.BMS_fault[1] = (statusBits & (1 << 1)) ? 1 : 0; // Cell Undervolt Fault
+			currentBmsAndElconData.BMS_fault[2] = (statusBits & (1 << 2)) ? 1 : 0; // Cell High Temp Fault
+			currentBmsAndElconData.BMS_fault[3] = (statusBits & (1 << 3)) ? 1 : 0; // Cell Low Temp Fault
+			currentBmsAndElconData.BMS_fault[4] = (statusBits & (1 << 4)) ? 1 : 0; // Redundant Voltage Fault
+			currentBmsAndElconData.BMS_fault[5] = (statusBits & (1 << 5)) ? 1 : 0; // Redundant Temp Fault
+			currentBmsAndElconData.BMS_fault[6] = (statusBits & (1 << 6)) ? 1 : 0; // Invalid Data Fault
+			currentBmsAndElconData.BMS_fault[7] = (statusBits & (1 << 7)) ? 1 : 0; // Open Wire Detection Fault
+
+			currentBmsAndElconData.BMS_warning[0] = (statusBits & (1 << 8)) ? 1 : 0;  // Cell Overvolt Warning
+			currentBmsAndElconData.BMS_warning[1] = (statusBits & (1 << 9)) ? 1 : 0;  // Cell Undervolt Warning
+			currentBmsAndElconData.BMS_warning[2] = (statusBits & (1 << 10)) ? 1 : 0; // Cell High Temp Warning
+			currentBmsAndElconData.BMS_warning[3] = (statusBits & (1 << 11)) ? 1 : 0; // Cell Low Temp Warning
+			currentBmsAndElconData.BMS_warning[4] = (statusBits & (1 << 12)) ? 1 : 0; // Cell Imbalance Warning
+
 			currentBmsAndElconData.BMS_packImbalance_mV = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
 			currentBmsAndElconData.BMS_hvSensePackVoltage_cV = ((uint16_t)RxData[5] << 8) | RxData[4];
-			currentBmsAndElconData.BMS_stateOfCharge = ((uint16_t)RxData[7] << 8) | RxData[6];
 		}
 		else if (RxHeader.StdId == BMS_STATE_OF_CHARGE_CAN_ID)
 		{
 			bmsFlags |= FLAG_SOC;
-			// TODO: Parse SOC message
+			currentBmsAndElconData.BMS_stateOfCharge = (uint16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
 		}
 		else if (RxHeader.StdId == BMS_FAULT_AND_WARNING_SUMMARY_CAN_ID)
 		{
