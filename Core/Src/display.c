@@ -1046,7 +1046,7 @@ void Display_drawTitleBar(char title[])
 			break;
 		}
 	}
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		if (currentBmsAndElconData.BMS_fault[i] == 1)
 		{
@@ -1209,11 +1209,9 @@ displayState Display_displayErrors(void)
 	{
 		selectedOption = 0;
 	}
-	static const char *elconErrorMessages[5] = {"HW Fail", "Charger Overtemp", "Wrong Input Volt", "No Batt Volt",
-												"Comms Timeout"};
 
-	static const char *bmsErrorMessages[8] = {"Cell Overvolt", "Cell Undervolt", "Open Wire", "PEC Error",
-											  "Cell Overtemp", "Cell Undertemp", "Redun Volt Diff", "Redun Temp Diff"};
+	static const char *elconErrorMessages[5] = {"HW Fail", "Charger Overtemp", "Wrong Input Volt", "No Batt Volt", "Comms Timeout"};
+	static const char *bmsErrorMessages[5] = {"Cell Overvolt", "Cell Undervolt", "Overtemp", "Undertemp", "Avg Overtemp"};
 
 	char currentErrors[11][100];
 	int currentErrorIndex = 0;
@@ -1226,7 +1224,7 @@ displayState Display_displayErrors(void)
 			currentErrorIndex++;
 		}
 	}
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		if (currentBmsAndElconData.BMS_fault[i] == 1)
 		{

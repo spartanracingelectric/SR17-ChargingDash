@@ -8,7 +8,6 @@
 #define FLAG_PACK_SUMMARY_TWO (1 << 1)
 #define FLAG_SOC (1 << 2)
 #define FLAG_BALANCE (1 << 3)
-#define FLAG_FAULT_AND_WARNING_SUMMARY (1 << 4)
 
 #define BMS_BALANCE_STATUS_CAN_ID 0x604
 #define BMS_STATE_OF_CHARGE_CAN_ID 0x621

@@ -46,7 +46,7 @@ typedef struct
 	int16_t BMS_stateOfCharge; 
 	int16_t BMS_packImbalance_mV;
 	bool BMS_balanceStatus;
-	bool BMS_fault[8];
+	bool BMS_fault[5];
 	bool BMS_warning[5];
 	uint16_t ELCON_outputVoltage_dV;
 	uint16_t ELCON_outputCurrent_dA;

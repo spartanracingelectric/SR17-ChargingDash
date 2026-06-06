@@ -188,8 +188,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 			currentBmsAndElconData.BMS_maxCellVoltage_mV = (uint16_t)(((uint16_t)RxData[1] << 8) | RxData[0]) / 10;
 			currentBmsAndElconData.BMS_minCellVoltage_mV = (uint16_t)(((uint16_t)RxData[3] << 8) | RxData[2]) / 10;
-			currentBmsAndElconData.BMS_maxTemp_C = (int8_t)RxData[4];
-			currentBmsAndElconData.BMS_minTemp_C = (int8_t)RxData[5];
+			currentBmsAndElconData.BMS_averageTemp_C = (int8_t)RxData[4];
+			currentBmsAndElconData.BMS_maxTemp_C = (int8_t)RxData[5];
 			currentBmsAndElconData.BMS_sumPackVoltage_cV = (uint16_t)(((uint16_t)RxData[7] << 8) | RxData[6]);
 		}
 		else if (RxHeader.StdId == BMS_PACK_SUMMARY_TWO_CAN_ID)
@@ -202,38 +202,21 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			currentBmsAndElconData.BMS_fault[1] = (statusBits & (1 << 1)) ? 1 : 0; // Cell Undervolt Fault
 			currentBmsAndElconData.BMS_fault[2] = (statusBits & (1 << 2)) ? 1 : 0; // Cell High Temp Fault
 			currentBmsAndElconData.BMS_fault[3] = (statusBits & (1 << 3)) ? 1 : 0; // Cell Low Temp Fault
-			currentBmsAndElconData.BMS_fault[4] = (statusBits & (1 << 4)) ? 1 : 0; // Redundant Voltage Fault
-			currentBmsAndElconData.BMS_fault[5] = (statusBits & (1 << 5)) ? 1 : 0; // Redundant Temp Fault
-			currentBmsAndElconData.BMS_fault[6] = (statusBits & (1 << 6)) ? 1 : 0; // Invalid Data Fault
-			currentBmsAndElconData.BMS_fault[7] = (statusBits & (1 << 7)) ? 1 : 0; // Open Wire Detection Fault
+			currentBmsAndElconData.BMS_fault[4] = (statusBits & (1 << 4)) ? 1 : 0; // Over Temp Average Fault
 
-			currentBmsAndElconData.BMS_warning[0] = (statusBits & (1 << 8)) ? 1 : 0;  // Cell Overvolt Warning
-			currentBmsAndElconData.BMS_warning[1] = (statusBits & (1 << 9)) ? 1 : 0;  // Cell Undervolt Warning
+			currentBmsAndElconData.BMS_warning[0] = (statusBits & (1 << 8)) ? 1 : 0; // Cell Overvolt Warning
+			currentBmsAndElconData.BMS_warning[1] = (statusBits & (1 << 9)) ? 1 : 0; // Cell Undervolt Warning
 			currentBmsAndElconData.BMS_warning[2] = (statusBits & (1 << 10)) ? 1 : 0; // Cell High Temp Warning
 			currentBmsAndElconData.BMS_warning[3] = (statusBits & (1 << 11)) ? 1 : 0; // Cell Low Temp Warning
 			currentBmsAndElconData.BMS_warning[4] = (statusBits & (1 << 12)) ? 1 : 0; // Cell Imbalance Warning
-
 			currentBmsAndElconData.BMS_packImbalance_mV = (int16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
-			currentBmsAndElconData.BMS_hvSensePackVoltage_cV = ((uint16_t)RxData[5] << 8) | RxData[4];
+			currentBmsAndElconData.BMS_hvSensePackVoltage_cV = (uint16_t)(((uint16_t)RxData[5] << 8) | RxData[4]);
+			currentBmsAndElconData.BMS_minTemp_C = (int8_t)RxData[6];
 		}
 		else if (RxHeader.StdId == BMS_STATE_OF_CHARGE_CAN_ID)
 		{
 			bmsFlags |= FLAG_SOC;
 			currentBmsAndElconData.BMS_stateOfCharge = (uint16_t)(((uint16_t)RxData[3] << 8) | RxData[2]);
-		}
-		else if (RxHeader.StdId == BMS_FAULT_AND_WARNING_SUMMARY_CAN_ID)
-		{
-			bmsFlags |= FLAG_FAULT_AND_WARNING_SUMMARY;
-			uint8_t faultBits = RxData[2];
-
-			currentBmsAndElconData.BMS_fault[0] = (faultBits & (1 << 0)) ? 1 : 0; // Over Volt
-			currentBmsAndElconData.BMS_fault[1] = (faultBits & (1 << 1)) ? 1 : 0; // Under Volt
-			currentBmsAndElconData.BMS_fault[2] = (faultBits & (1 << 2)) ? 1 : 0; // Open Wire
-			currentBmsAndElconData.BMS_fault[3] = (faultBits & (1 << 3)) ? 1 : 0; // PEC
-			currentBmsAndElconData.BMS_fault[4] = (faultBits & (1 << 4)) ? 1 : 0; // Over Temp
-			currentBmsAndElconData.BMS_fault[5] = (faultBits & (1 << 5)) ? 1 : 0; // Under Temp
-			currentBmsAndElconData.BMS_fault[6] = (faultBits & (1 << 6)) ? 1 : 0; // Redundant Volt
-			currentBmsAndElconData.BMS_fault[7] = (faultBits & (1 << 7)) ? 1 : 0; // Redundant Temp
 		}
 	}
 	else if (RxHeader.StdId == BMS_BALANCE_STATUS_CAN_ID)
@@ -243,7 +226,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	}
 
 	if (bmsFlags ==
-		(FLAG_PACK_SUMMARY_ONE | FLAG_PACK_SUMMARY_TWO | FLAG_SOC | FLAG_BALANCE | FLAG_FAULT_AND_WARNING_SUMMARY))
+		(FLAG_PACK_SUMMARY_ONE | FLAG_PACK_SUMMARY_TWO | FLAG_SOC | FLAG_BALANCE))
 	{
 		bms_can_previous_time = bms_can_current_time;
 		bmsFlags = 0;

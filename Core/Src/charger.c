@@ -207,14 +207,15 @@ bool Charger_checkFaultStatus()
 			break;
 		}
 	}
-	for (int i = 0; i < 8; i++)
-	{
-		if (currentBmsAndElconData.BMS_fault[i])
-		{
-			nowFaulting = true;
-			break;
-		}
-	}
+
+	// for (int i = 0; i < 5; i++)
+	// {
+	// 	if (currentBmsAndElconData.BMS_fault[i])
+	// 	{
+	// 		nowFaulting = true;
+	// 		break;
+	// 	}
+	// }
 
 	uint32_t now = HAL_GetTick();
 	if (nowFaulting && !wasFaulting)
