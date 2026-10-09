@@ -57,6 +57,11 @@ bool Charger_checkChargerConditions()
 	return false;
 }
 
+bool Charger_checkPrechargeConditions() 
+{
+	return (Charger_isChargerSafe() && Charger_isHvilSwitchFlipped());
+}
+
 void Charger_handleCharging(CANMessage *charging_msg, CANMessage *balancing_msg, CANMessage *precharge_msg)
 {
 	CAN_sendPrecharge(precharge_msg, Charger_checkPrechargeConditions());
@@ -264,11 +269,6 @@ void Charger_printBmsAndElconData(const volatile bmsAndElconData *d)
 			DEBUG_PRINT(", ");
 	}
 	DEBUG_PRINT("]\n");
-}
-
-bool Charger_checkPrechargeConditions() 
-{
-	return (Charger_isChargerSafe() && Charger_isHvilSwitchFlipped());
 }
 
 

@@ -69,7 +69,7 @@ extern float LIMIT_AMPS;
 extern uint16_t MAX_ALLOWED_PWR;
 
 void Charger_updateChargingMode();
-void Charger_handleCharging(CANMessage *charging_msg, CANMessage *balancing_msg);
+void Charger_handleCharging(CANMessage *charging_msg, CANMessage *balancing_msg, CANMessage *precharge_msg);
 bool Charger_isChargerSafe();
 bool Charger_isHvilSwitchFlipped();
 bool Charger_isReadyToChargeSwitchFlipped();
