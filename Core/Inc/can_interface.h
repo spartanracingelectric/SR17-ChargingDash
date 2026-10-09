@@ -36,5 +36,6 @@ void CAN_SettingsInit(CANMessage *canMsgPtr, bool isExtended, uint16_t dlc_lengt
 void Set_CAN_Id(CANMessage *ptr, uint32_t id, bool isExtended);
 void CAN_Balance(CANMessage *ptr, bool balancing_enabled);
 void CAN_Charge(CANMessage *ptr, float chargingLimitsVoltsFloat, float chargingLimitsAmpsFloat, bool charge_enable);
+void CAN_sendPrecharge(CANMessage *ptr, bool precharge_enabled);
 
 #endif

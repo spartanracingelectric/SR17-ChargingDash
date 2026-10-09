@@ -184,6 +184,9 @@ int main(void)
 	CANMessage balancing_msg;
 	CAN_SettingsInit(&balancing_msg, false, 1);
 
+  CANMessage precharge_msg;
+  CAN_SettingsInit(&precharge_msg, false, 1);
+
 	// INIT PWM
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
@@ -222,7 +225,7 @@ int main(void)
 		Display_updateState();
 		// DEBUG_PRINT("OUTLET MAX AMPS: %f\n", J1772_getMaxCurrent());
 		// DEBUG_PRINT("OUTLET PLUG DETECTED: %d\n", J1772_isPlugConnected());
-		Charger_handleCharging(&charging_msg, &balancing_msg);
+		Charger_handleCharging(&charging_msg, &balancing_msg, &precharge_msg);
 		if (currentChargerState == CHARGER_STATE_CHARGING || currentChargerState == CHARGER_STATE_BALANCING) {
 			Cooling_commandFanSpeed(80);
 		}

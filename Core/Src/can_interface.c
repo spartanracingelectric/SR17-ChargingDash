@@ -266,3 +266,13 @@ void CAN_Charge(CANMessage *ptr, float chargingLimitsVoltsFloat, float chargingL
 	HAL_Delay(3);
 	CAN_Send(ptr);
 }
+
+void CAN_sendPrecharge(CANMessage *msg, bool precharge_enable)
+{
+	uint32_t CAN_ID = 0x605;
+	Set_CAN_Id(msg, CAN_ID, false);
+
+	msg->data[0] = (precharge_enable) ? 0x01 : 0x00;
+
+	CAN_Send(msg);
+}
